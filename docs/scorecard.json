@@ -1,0 +1,333 @@
+{
+ "scale": {
+  "base_score": 600,
+  "base_odds": 50,
+  "pdo": 20
+ },
+ "offset": 487.1228762045055,
+ "factor": 28.85390081777927,
+ "loss_rate": 0.3652,
+ "max_rate": 0.3099,
+ "max_pd": 0.4,
+ "fee": 0.01,
+ "term": 36,
+ "fitted_on": "36-month loans issued 2007-2014 (337,996 loans)",
+ "characteristics": [
+  {
+   "name": "fico",
+   "type": "numerical",
+   "description": "FICO score",
+   "labels": [
+    "664 or less",
+    "665 to 674",
+    "675 to 689",
+    "690 to 699",
+    "700 to 709",
+    "710 to 729",
+    "730 to 759",
+    "760 or more",
+    "not given"
+   ],
+   "points": [
+    50,
+    52,
+    56,
+    60,
+    64,
+    69,
+    76,
+    87,
+    50
+   ],
+   "splits": [
+    664.5,
+    674.5,
+    689.5,
+    699.5,
+    709.5,
+    729.5,
+    759.5
+   ]
+  },
+  {
+   "name": "annual_inc",
+   "type": "numerical",
+   "description": "annual income",
+   "labels": [
+    "below $27,300",
+    "$27,300 to $37,100",
+    "$37,100 to $43,300",
+    "$43,300 to $50,400",
+    "$50,400 to $62,000",
+    "$62,000 to $75,000",
+    "$75,000 to $100,100",
+    "$100,100 or more",
+    "not given"
+   ],
+   "points": [
+    53,
+    55,
+    57,
+    59,
+    60,
+    62,
+    65,
+    67,
+    53
+   ],
+   "splits": [
+    27297.5,
+    37086.5,
+    43317.5,
+    50425.5,
+    62010.80078125,
+    75000.5,
+    100131.0
+   ]
+  },
+  {
+   "name": "dti",
+   "type": "numerical",
+   "description": "debt-to-income ratio",
+   "labels": [
+    "below 10.7 %",
+    "10.7 % to 13.2 %",
+    "13.2 % to 15.6 %",
+    "15.6 % to 19.1 %",
+    "19.1 % to 21.4 %",
+    "21.4 % to 25.4 %",
+    "25.4 % to 29.2 %",
+    "29.2 % or more",
+    "not given"
+   ],
+   "points": [
+    65,
+    63,
+    62,
+    60,
+    59,
+    57,
+    55,
+    54,
+    54
+   ],
+   "splits": [
+    10.704999923706055,
+    13.175000190734863,
+    15.574999809265137,
+    19.0649995803833,
+    21.394999504089355,
+    25.394999504089355,
+    29.195000648498535
+   ]
+  },
+  {
+   "name": "loan_to_income",
+   "type": "numerical",
+   "description": "loan amount / annual income",
+   "labels": [
+    "below 7 % of income",
+    "7 % to 12 % of income",
+    "12 % to 16 % of income",
+    "16 % to 20 % of income",
+    "20 % to 23 % of income",
+    "23 % to 27 % of income",
+    "27 % to 33 % of income",
+    "33 % or more of income",
+    "not given"
+   ],
+   "points": [
+    66,
+    64,
+    63,
+    62,
+    61,
+    59,
+    55,
+    52,
+    52
+   ],
+   "splits": [
+    0.06770416721701622,
+    0.12091372907161713,
+    0.1568884328007698,
+    0.19692549854516983,
+    0.2345346286892891,
+    0.27247339487075806,
+    0.33014731109142303
+   ]
+  },
+  {
+   "name": "mort_acc",
+   "type": "numerical",
+   "description": "number of mortgage accounts",
+   "labels": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5 or more",
+    "not given"
+   ],
+   "points": [
+    58,
+    60,
+    61,
+    62,
+    63,
+    63,
+    61
+   ],
+   "splits": [
+    0.5,
+    1.5,
+    2.5,
+    3.5,
+    4.5
+   ]
+  },
+  {
+   "name": "home_ownership",
+   "type": "categorical",
+   "description": "home ownership",
+   "labels": [
+    "owns with a mortgage",
+    "owns outright",
+    "rents or other",
+    "not given"
+   ],
+   "points": [
+    62,
+    60,
+    58,
+    58
+   ],
+   "keep": [
+    "MORTGAGE",
+    "OWN",
+    "RENT"
+   ],
+   "groups": [
+    [
+     "MORTGAGE"
+    ],
+    [
+     "OWN"
+    ],
+    [
+     "OTHER",
+     "RENT"
+    ]
+   ]
+  },
+  {
+   "name": "inq_last_6mths",
+   "type": "numerical",
+   "description": "credit inquiries in the last 6 months",
+   "labels": [
+    "0",
+    "1",
+    "2",
+    "3 or more",
+    "not given"
+   ],
+   "points": [
+    65,
+    58,
+    53,
+    48,
+    48
+   ],
+   "splits": [
+    0.5,
+    1.5,
+    2.5
+   ]
+  },
+  {
+   "name": "revol_util",
+   "type": "numerical",
+   "description": "revolving credit utilisation (%)",
+   "labels": [
+    "below 18.3 %",
+    "18.3 % to 26.4 %",
+    "26.4 % to 38.1 %",
+    "38.1 % to 47.9 %",
+    "47.9 % to 63.1 %",
+    "63.1 % to 73.2 %",
+    "73.2 % to 86.4 %",
+    "86.4 % or more",
+    "not given"
+   ],
+   "points": [
+    62,
+    62,
+    61,
+    60,
+    60,
+    60,
+    59,
+    59,
+    59
+   ],
+   "splits": [
+    18.34999942779541,
+    26.449999809265137,
+    38.14999961853027,
+    47.85000038146973,
+    63.14999961853027,
+    73.25,
+    86.35000228881836
+   ]
+  },
+  {
+   "name": "purpose",
+   "type": "categorical",
+   "description": "loan purpose",
+   "labels": [
+    "car, paying off credit cards or major purchase",
+    "home improvement",
+    "debt consolidation",
+    "medical, small business or other",
+    "not given"
+   ],
+   "points": [
+    66,
+    64,
+    59,
+    52,
+    52
+   ],
+   "keep": [
+    "car",
+    "credit_card",
+    "debt_consolidation",
+    "home_improvement",
+    "major_purchase",
+    "medical",
+    "other",
+    "small_business"
+   ],
+   "groups": [
+    [
+     "car",
+     "credit_card",
+     "major_purchase"
+    ],
+    [
+     "home_improvement"
+    ],
+    [
+     "debt_consolidation"
+    ],
+    [
+     "OTHER",
+     "medical",
+     "other",
+     "small_business"
+    ]
+   ]
+  }
+ ]
+}

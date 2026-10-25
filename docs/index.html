@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loan scorecard</title>
+<meta name="description" content="Score a loan application with a points scorecard trained on Lending Club loans, and see why it decides the way it does.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;650;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef2ee;
+    --sheet: #f8faf7;
+    --ink: #1b2a3a;
+    --muted: #5d6b78;
+    --rule: #c9d6cc;
+    --rule-strong: #93a89a;
+    --approve: #2f6b3f;
+    --decline: #b3261e;
+    --focus: #2b5fb4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121a21; --sheet: #18222b; --ink: #e3e9ee; --muted: #9aa8b4;
+      --rule: #2a3b44; --rule-strong: #4a6270; --approve: #6cc483; --decline: #f2847c; --focus: #8fb4ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121a21; --sheet: #18222b; --ink: #e3e9ee; --muted: #9aa8b4;
+    --rule: #2a3b44; --rule-strong: #4a6270; --approve: #6cc483; --decline: #f2847c; --focus: #8fb4ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 400 16px/1.55 "Public Sans", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 10px; max-width: 18ch; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0 0 28px; }
+  h2 { font-size: 1.25rem; font-weight: 650; margin: 0 0 10px; }
+  a { color: var(--ink); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .desk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 28px; align-items: start; }
+  @media (max-width: 860px) { .desk { grid-template-columns: 1fr; } }
+
+  /* the application form */
+  form { display: grid; gap: 18px; }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: .92rem; }
+  .examples button {
+    font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--rule-strong);
+    border-radius: 999px; padding: 4px 12px; cursor: pointer;
+  }
+  .examples button:hover { background: var(--sheet); }
+  fieldset { border: 0; border-top: 1px solid var(--rule-strong); margin: 0; padding: 12px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+  legend { font-weight: 650; padding: 0 8px 0 0; }
+  label { display: grid; gap: 4px; font-size: .92rem; }
+  label span.hint { color: var(--muted); font-size: .82rem; }
+  input, select {
+    font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule-strong);
+    border-radius: 6px; padding: 7px 9px; width: 100%;
+  }
+  @media (max-width: 480px) { fieldset { grid-template-columns: 1fr; } }
+
+  /* the score slip: the one bold element */
+  .slip {
+    position: sticky; top: 16px; background: var(--sheet); border: 1px solid var(--rule-strong);
+    border-radius: 4px; padding: 22px 22px 18px;
+  }
+  .slip header { margin-bottom: 8px; }
+  .slip header h2 { margin: 0; }
+  .slip header small { color: var(--muted); font-size: .85rem; }
+  .line { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+  .line .what { overflow-wrap: anywhere; }
+  .line .what small { display: block; color: var(--muted); font-size: .8rem; line-height: 1.25; }
+  .line .pts { font-weight: 650; text-align: right; min-width: 2.5ch; }
+  .line .of { color: var(--muted); font-size: .82rem; text-align: right; min-width: 4.5ch; }
+  .line.lost .pts, .line.lost .what { color: var(--decline); }
+  .total { border-top: 2px solid var(--ink); margin-top: 6px; padding-top: 10px; display: flex; justify-content: space-between; align-items: baseline; }
+  .total .n { font-size: 2.6rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 0; }
+  .facts div { border-top: 1px solid var(--rule-strong); padding-top: 6px; }
+  .facts dt { color: var(--muted); font-size: .82rem; }
+  .facts dd { margin: 0; font-size: 1.25rem; font-weight: 650; }
+  .stamp {
+    display: inline-block; margin: 16px 0 8px; padding: 6px 14px; border: 3px solid currentColor; border-radius: 6px;
+    font-weight: 800; font-size: 1.15rem; letter-spacing: .04em; transform: rotate(-2deg);
+  }
+  .stamp.approve { color: var(--approve); }
+  .stamp.decline { color: var(--decline); }
+  @media (prefers-reduced-motion: no-preference) { .stamp.changed { animation: press .35s ease-out; } }
+  @keyframes press { from { transform: rotate(-2deg) scale(1.25); opacity: .2; } to { transform: rotate(-2deg) scale(1); opacity: 1; } }
+  .why { margin: 6px 0 0; padding-left: 1.2em; }
+  .why li { margin: 2px 0; }
+  .note { color: var(--muted); font-size: .85rem; margin: 12px 0 0; }
+
+  /* evidence below */
+  .evidence { margin-top: 56px; display: grid; gap: 40px; }
+  .finding { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; align-items: center; }
+  @media (max-width: 860px) { .finding { grid-template-columns: 1fr; } }
+  .finding p { margin: 0 0 8px; max-width: 60ch; }
+  .finding img { width: 100%; height: auto; background: #fff; border: 1px solid var(--rule-strong); border-radius: 4px; }
+  table.mini { border-collapse: collapse; font-size: .92rem; margin-top: 6px; }
+  table.mini td, table.mini th { padding: 3px 12px 3px 0; text-align: left; border-bottom: 1px solid var(--rule); }
+  table.mini td.num, table.mini th.num { text-align: right; }
+  footer { margin-top: 48px; border-top: 1px solid var(--rule-strong); padding-top: 12px; color: var(--muted); font-size: .88rem; }
+  .error { color: var(--decline); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Score a loan application the way a lender would</h1>
+  <p class="lede">A points scorecard trained on 338,000 Lending Club loans from 2007 to 2014. Change an answer and watch the points add up:
+    every decision comes with the reasons behind it. A portfolio project, not for real lending decisions.</p>
+
+  <div class="desk">
+    <form id="app" autocomplete="off" novalidate>
+      <div class="examples" role="group" aria-label="Fill in an example applicant">
+        Try an example:
+        <button type="button" data-example="strong">Strong file</button>
+        <button type="button" data-example="typical">Typical file</button>
+        <button type="button" data-example="thin">Stretched file</button>
+      </div>
+
+      <fieldset>
+        <legend>Credit report</legend>
+        <label>FICO score <input name="fico_score" type="number" min="300" max="850" step="1" inputmode="numeric"></label>
+        <label>Credit inquiries, last 6 months <input name="inquiries_last_6_months" type="number" min="0" step="1" inputmode="numeric"></label>
+        <label>Revolving utilisation <span class="hint">card balances / card limits, %</span>
+          <input name="revolving_utilisation" type="number" min="0" max="200" step="0.1" inputmode="decimal"></label>
+        <label>Mortgage accounts <span class="hint">open or closed</span>
+          <input name="mortgage_accounts" type="number" min="0" step="1" inputmode="numeric"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Income and debt</legend>
+        <label>Annual income <span class="hint">USD</span>
+          <input name="annual_income" type="number" min="0" step="1000" inputmode="numeric"></label>
+        <label>Debt-to-income <span class="hint">monthly debt payments / income, %</span>
+          <input name="debt_to_income" type="number" min="0" max="100" step="0.1" inputmode="decimal"></label>
+        <label>Home
+          <select name="home_ownership">
+            <option value="">Not given</option>
+            <option value="MORTGAGE">Owns with a mortgage</option>
+            <option value="OWN">Owns outright</option>
+            <option value="RENT">Rents</option>
+            <option value="OTHER">Other</option>
+          </select></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>The loan</legend>
+        <label>Amount <span class="hint">USD, 36 months</span>
+          <input name="loan_amount" type="number" min="500" max="40000" step="500" inputmode="numeric"></label>
+        <label>Purpose
+          <select name="purpose">
+            <option value="">Not given</option>
+            <option value="debt_consolidation">Debt consolidation</option>
+            <option value="credit_card">Pay off credit cards</option>
+            <option value="home_improvement">Home improvement</option>
+            <option value="major_purchase">Major purchase</option>
+            <option value="car">Car</option>
+            <option value="medical">Medical</option>
+            <option value="small_business">Small business</option>
+            <option value="moving">Moving</option>
+            <option value="vacation">Vacation</option>
+            <option value="wedding">Wedding</option>
+            <option value="other">Other</option>
+          </select></label>
+      </fieldset>
+    </form>
+
+    <section class="slip" aria-live="polite" aria-labelledby="slip-title">
+      <header><h2 id="slip-title">Score slip</h2><small>Points for each answer, out of the best possible. Red lines are the main reasons.</small></header>
+      <div id="lines"><p class="note">Loading the scorecard…</p></div>
+      <div class="total"><span>Score</span><span class="n" id="total">–</span></div>
+      <dl class="facts">
+        <div><dt>Chance of default within 3 years</dt><dd id="pd">–</dd></div>
+        <div><dt>Interest rate that covers expected losses</dt><dd id="rate">–</dd></div>
+      </dl>
+      <div id="stamp" class="stamp" hidden></div>
+      <div id="reasons"></div>
+      <p class="note">600 points mean odds of 50 to 1 against default; every 20 points double the odds.
+        In 2016–17 real early defaults ran up to 1.5 times this model's estimate: see the monitoring below.</p>
+    </section>
+  </div>
+
+  <div class="evidence">
+    <section class="finding">
+      <div>
+        <h2>Tested on a year it never saw</h2>
+        <p>On 283,026 loans from 2015, the scorecard ranks risk with a Gini of 0.30. A LightGBM challenger reaches 0.34, and Lending Club's own grade,
+          built with the full credit report, 0.36. All three predicted too few defaults in 2015: the ranking held, the level drifted.</p>
+        <table class="mini">
+          <tr><th>2015 loans</th><th class="num">Gini</th><th class="num">predicted defaults</th></tr>
+          <tr><td>Lending Club grade</td><td class="num">0.357</td><td class="num">12.8 %</td></tr>
+          <tr><td>LightGBM challenger</td><td class="num">0.343</td><td class="num">13.3 %</td></tr>
+          <tr><td>This scorecard</td><td class="num">0.303</td><td class="num">13.5 %</td></tr>
+          <tr><td>Actual</td><td class="num"></td><td class="num">14.9 %</td></tr>
+        </table>
+      </div>
+      <img src="img/calibration.png" alt="Predicted against observed default rate in ten bands for 2015: every model sits above the diagonal, so all predicted too few defaults." loading="lazy">
+    </section>
+
+    <section class="finding">
+      <div>
+        <h2>Where the score is worth money</h2>
+        <p>At Lending Club's prices almost every approved loan was worth funding, so a profit rule declines under 1 %. The ranking pays when choosing which loans to fund:
+          an investor funding half of the 2015 loans by this scorecard earned 6.29 % on money lent, against 6.09 % picking Lending Club's best grades.</p>
+      </div>
+      <img src="img/strategy.png" alt="Realised 2015 profit by approval rate for the scorecard, the challenger and Lending Club's grade." loading="lazy">
+    </section>
+
+    <section class="finding">
+      <div>
+        <h2>Monitoring caught what stable inputs hid</h2>
+        <p>After go-live the applicants looked unchanged for two years, with a score PSI of at most 0.006. Early defaults still rose to 1.49 times the model's estimate,
+          a red light visible from June 2017. Input stability is not model health.</p>
+      </div>
+      <img src="img/monitoring.png" alt="Top: score PSI and characteristic CSI per quarter, mostly green. Bottom: observed over expected early defaults rising to 1.49 by 2016." loading="lazy">
+    </section>
+  </div>
+
+  <footer>
+    Data: Lending Club accepted loans and rejected applications 2007–2018 (Kaggle, CC0). Model: <span id="fitted">fitted on 2007–2014 loans</span>.
+    Code, validation and what did not work: <a href="https://github.com/Omercan4/credit-risk-scorecard">github.com/Omercan4/credit-risk-scorecard</a>.
+  </footer>
+</main>
+
+<script src="scorer.js"></script>
+<script>
+(function () {
+  "use strict";
+  const examples = {
+    strong: { fico_score: 765, inquiries_last_6_months: 0, revolving_utilisation: 15, mortgage_accounts: 3, annual_income: 110000,
+              debt_to_income: 9, home_ownership: "MORTGAGE", loan_amount: 10000, purpose: "credit_card" },
+    typical: { fico_score: 695, inquiries_last_6_months: 1, revolving_utilisation: 55, mortgage_accounts: 1, annual_income: 60000,
+               debt_to_income: 18, home_ownership: "RENT", loan_amount: 12000, purpose: "debt_consolidation" },
+    thin: { fico_score: 662, inquiries_last_6_months: 3, revolving_utilisation: 92, mortgage_accounts: 0, annual_income: 26000,
+            debt_to_income: 34, home_ownership: "RENT", loan_amount: 15000, purpose: "small_business" },
+  };
+  const form = document.getElementById("app");
+  const numeric = ["fico_score", "inquiries_last_6_months", "revolving_utilisation", "mortgage_accounts", "annual_income", "debt_to_income", "loan_amount"];
+  let card = null, lastDecision = null;
+
+  function read() {
+    const app = {};
+    for (const el of form.elements) {
+      if (!el.name) continue;
+      if (numeric.includes(el.name)) app[el.name] = el.value === "" ? null : Number(el.value);
+      else app[el.name] = el.value === "" ? null : el.value;
+    }
+    return app;
+  }
+
+  function fill(values) {
+    for (const [k, v] of Object.entries(values)) form.elements[k].value = v;
+    render();
+  }
+
+  function pct(x, digits) { return (x * 100).toFixed(digits) + " %"; }
+
+  function escape(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  function render() {
+    if (!card) return;
+    const r = Scorer.score(card, read());
+    const reasonNames = r.reasons.map(function (x) { return x.characteristic; });
+    document.getElementById("lines").innerHTML = r.points.map(function (l) {
+      const lost = reasonNames.includes(l.characteristic);
+      return '<div class="line' + (lost ? " lost" : "") + '"><span class="what">' + escape(l.description) +
+        '<small>' + escape(l.bin) + '</small></span>' +
+        '<span class="pts">' + l.points + '</span><span class="of">of ' + l.max_points + '</span></div>';
+    }).join("");
+    document.getElementById("total").textContent = r.score;
+    document.getElementById("pd").textContent = pct(r.pd, 1);
+    document.getElementById("rate").textContent = r.break_even_rate === null ? "above 100 %" : pct(r.break_even_rate, 1);
+
+    const stamp = document.getElementById("stamp");
+    stamp.hidden = false;
+    stamp.className = "stamp " + r.decision;
+    stamp.textContent = r.decision === "approve" ? "Approve" : "Decline";
+    if (lastDecision !== null && lastDecision !== r.decision) {
+      void stamp.offsetWidth;
+      stamp.classList.add("changed");
+    }
+    lastDecision = r.decision;
+
+    let head;
+    if (r.decision_rule === "pd above policy limit") {
+      head = "A default chance above " + pct(card.max_pd, 0) + " is past the policy limit: loans like this earned nothing in 2007–2014. Main reasons:";
+    } else if (r.decision === "decline") {
+      head = "Even the highest rate, " + pct(card.max_rate, 2) + ", does not cover the expected loss. Main reasons:";
+    } else {
+      head = "Approved if the rate is at least " + pct(r.break_even_rate, 1) + ". Points lost on:";
+    }
+    document.getElementById("reasons").innerHTML = r.reasons.length
+      ? "<p>" + escape(head) + '</p><ol class="why">' + r.reasons.map(function (x) {
+          return "<li>" + escape(x.text) + " (−" + x.points_lost + ")</li>";
+        }).join("") + "</ol>"
+      : "<p>Best possible answer on every characteristic.</p>";
+  }
+
+  document.querySelectorAll("[data-example]").forEach(function (b) {
+    b.addEventListener("click", function () { fill(examples[b.dataset.example]); });
+  });
+  form.addEventListener("input", render);
+
+  fetch("scorecard.json")
+    .then(function (res) { if (!res.ok) throw new Error(res.status); return res.json(); })
+    .then(function (c) {
+      card = c;
+      if (c.fitted_on) document.getElementById("fitted").textContent = c.fitted_on;
+      fill(examples.typical);
+    })
+    .catch(function () {
+      document.getElementById("lines").innerHTML =
+        '<p class="error">The scorecard file did not load. Open this page through a web server (make serve), not as a local file.</p>';
+    });
+})();
+</script>
+</body>
+</html>

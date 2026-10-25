@@ -2,7 +2,7 @@
 
 A loan scorecard built the way a bank would build it: from raw loans to an approve/decline rule with reasons,
 validated on later loans than it was trained on. Data: 2.26 M Lending Club loans, 2007–2018.
-Status: v0.2, milestones 3.0–3.5 done (API and a public page come next).
+Status: v0.3, milestones 3.0–3.6 done. **Try it: [omercan4.github.io/credit-risk-scorecard](https://omercan4.github.io/credit-risk-scorecard/)**: fill in an application and watch the points add up.
 
 **Results on 283,026 loans from 2015, a year never used for any choice:**
 - A 9-characteristic points scorecard ranks risk with **Gini 0.30**, and a LightGBM challenger reaches **0.34**. Lending Club's own grade, built with the full credit report, reaches 0.36. Both models beat that grade until 2012, and it pulled ahead as Lending Club improved it.
@@ -217,6 +217,28 @@ After that, rebuild the scorecard on recent vintages once the late-2017 policy c
 
 ![Vintage curves](docs/img/vintages.png)
 
+## Try it: page and API
+
+**Page:** [omercan4.github.io/credit-risk-scorecard](https://omercan4.github.io/credit-risk-scorecard/). It is a static page that scores in the browser from [`docs/scorecard.json`](docs/scorecard.json), so it has no server and cannot go offline.
+It shows the points for each answer, the total score, the chance of default, the interest rate that covers the expected loss, the decision and the top 3 reasons.
+
+**API** (FastAPI, `make serve` or `docker build -t crs . && docker run -p 8000:8000 crs`):
+
+```bash
+curl -s localhost:8030/score -H 'content-type: application/json' -d '{"fico_score": 695, "annual_income": 60000, "loan_amount": 12000,
+  "debt_to_income": 18, "mortgage_accounts": 1, "home_ownership": "RENT", "inquiries_last_6_months": 1,
+  "revolving_utilisation": 55, "purpose": "debt_consolidation"}'
+```
+
+It returns the score (536), the PD, the break-even rate, the decision with the rule behind it, the reasons and the points per characteristic. Unknown fields may be left out: they get the points of the missing bin.
+
+**The decision rule** is risk-based pricing plus one policy limit:
+- **Price:** the lowest annual rate at which the loan breaks even in expectation, using its PD, the 36.5 % loss rate and the 1 % fee. If even Lending Club's highest rate (30.99 %) is not enough, decline.
+- **Policy limit:** decline above a 40 % chance of default. Covering expected losses alone would approve a 53 % default chance at 24.5 %, which no lender would do. The limit comes from the data: in 2007–2014 the return on money lent fell with every PD band and reached zero above 40 % (161 loans, +0.2 %), and the model has almost no evidence beyond it.
+- The break-even rate covers losses only, not funding or operating costs, so it is a floor, not a price.
+
+**The page and the API cannot drift apart:** a test runs the page's JavaScript scorer (with Node) and the Python API on the same five applications, including bin edges, an unknown loan purpose and an empty application, and requires identical points, reasons and decisions.
+
 ## Run it
 
 ```bash
@@ -229,6 +251,8 @@ make scorecard     # time cross-validation, then fit the scorecard (models/, rep
 make validate      # out-of-time test on 2015 vs Lending Club's grade and the LightGBM challenger
 make strategy      # profit-based approve/decline rule on 2015, investor view, reject bias
 make monitor       # PSI/CSI and early defaults per quarter after go-live (2015-2018)
+make page          # export the scorecard for the web page (docs/scorecard.json)
+make serve         # API + page on http://127.0.0.1:8030 (API docs: /docs)
 make test
 ```
 
@@ -246,7 +270,7 @@ The tests and CI use a synthetic fixture ([`src/crs/data/fixture.py`](src/crs/da
 - [x] 3.3 challenger model, calibration and out-of-time validation
 - [x] 3.4 profit-based cut-off and reject bias
 - [x] 3.5 drift monitoring (PSI/CSI, early defaults, vintages)
-- [ ] 3.6 API and public page
+- [x] 3.6 API and public page
 - [ ] 3.7 model card and packaging
 
 Not for real lending decisions.

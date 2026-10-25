@@ -57,67 +57,71 @@ Chosen: up to **9** characteristics (best mean Gini; a smaller scorecard wins wi
 
 ## The scorecard
 
-| characteristic                        | bin                                   |   loans |   bad_rate |       woe |   points |
-|:--------------------------------------|:--------------------------------------|--------:|-----------:|----------:|---------:|
-| FICO score                            | < 664.5                               |   28709 |     0.1884 | -0.426483 |       50 |
-| FICO score                            | 664.5 to < 674.5                      |   57375 |     0.1739 | -0.328802 |       52 |
-| FICO score                            | 674.5 to < 689.5                      |   76338 |     0.1526 | -0.172627 |       56 |
-| FICO score                            | 689.5 to < 699.5                      |   43603 |     0.1314 |  0.001423 |       60 |
-| FICO score                            | 699.5 to < 709.5                      |   35346 |     0.1158 |  0.145461 |       64 |
-| FICO score                            | 709.5 to < 729.5                      |   46548 |     0.0962 |  0.353059 |       69 |
-| FICO score                            | 729.5 to < 759.5                      |   31137 |     0.0721 |  0.66776  |       76 |
-| FICO score                            | >= 759.5                              |   18940 |     0.0471 |  1.12022  |       87 |
-| annual income                         | < 27297.5                             |   20747 |     0.2012 | -0.5082   |       53 |
-| annual income                         | 27297.5 to < 37086.5                  |   37944 |     0.1786 | -0.361095 |       55 |
-| annual income                         | 37086.5 to < 43317.5                  |   30304 |     0.159  | -0.221329 |       57 |
-| annual income                         | 43317.5 to < 50425.5                  |   39257 |     0.1447 | -0.110621 |       59 |
-| annual income                         | 50425.5 to < 62010.8                  |   51309 |     0.1332 | -0.01442  |       60 |
-| annual income                         | 62010.8 to < 75000.5                  |   49014 |     0.1189 |  0.115938 |       62 |
-| annual income                         | 75000.5 to < 100131                   |   56870 |     0.1013 |  0.295557 |       65 |
-| annual income                         | >= 100131                             |   52547 |     0.0875 |  0.457655 |       67 |
-| annual income                         | missing                               |       4 |     0      | -0.5082   |       53 |
-| debt-to-income ratio                  | < 10.705                              |   82125 |     0.1043 |  0.262927 |       65 |
-| debt-to-income ratio                  | 10.705 to < 13.175                    |   36946 |     0.1124 |  0.179827 |       63 |
-| debt-to-income ratio                  | 13.175 to < 15.575                    |   37863 |     0.1191 |  0.114254 |       62 |
-| debt-to-income ratio                  | 15.575 to < 19.065                    |   52918 |     0.1304 |  0.009912 |       60 |
-| debt-to-income ratio                  | 19.065 to < 21.395                    |   32096 |     0.1407 | -0.077378 |       59 |
-| debt-to-income ratio                  | 21.395 to < 25.395                    |   44615 |     0.1517 | -0.165754 |       57 |
-| debt-to-income ratio                  | 25.395 to < 29.195                    |   28230 |     0.1689 | -0.293897 |       55 |
-| debt-to-income ratio                  | >= 29.195                             |   23203 |     0.1849 | -0.403537 |       54 |
-| loan amount / annual income           | < 0.0677042                           |   31880 |     0.1024 |  0.283572 |       66 |
-| loan amount / annual income           | 0.0677042 to < 0.120914               |   61484 |     0.1122 |  0.181283 |       64 |
-| loan amount / annual income           | 0.120914 to < 0.156888                |   46205 |     0.1157 |  0.146256 |       63 |
-| loan amount / annual income           | 0.156888 to < 0.196925                |   47661 |     0.1226 |  0.081373 |       62 |
-| loan amount / annual income           | 0.196925 to < 0.234535                |   40610 |     0.1295 |  0.017849 |       61 |
-| loan amount / annual income           | 0.234535 to < 0.272473                |   32102 |     0.1397 | -0.069407 |       59 |
-| loan amount / annual income           | 0.272473 to < 0.330147                |   35093 |     0.159  | -0.221671 |       55 |
-| loan amount / annual income           | >= 0.330147                           |   42957 |     0.1814 | -0.380146 |       52 |
-| loan amount / annual income           | missing                               |       4 |     0      | -0.380146 |       52 |
-| number of mortgage accounts           | < 0.5                                 |  130113 |     0.1581 | -0.214501 |       58 |
-| number of mortgage accounts           | 0.5 to < 1.5                          |   48019 |     0.1292 |  0.021146 |       60 |
-| number of mortgage accounts           | 1.5 to < 2.5                          |   38668 |     0.1163 |  0.141119 |       61 |
-| number of mortgage accounts           | 2.5 to < 3.5                          |   29241 |     0.1078 |  0.226377 |       62 |
-| number of mortgage accounts           | 3.5 to < 4.5                          |   21615 |     0.1034 |  0.2734   |       63 |
-| number of mortgage accounts           | >= 4.5                                |   32781 |     0.096  |  0.355022 |       63 |
-| number of mortgage accounts           | missing                               |   37559 |     0.1244 |  0.064635 |       61 |
-| home ownership                        | MORTGAGE                              |  158578 |     0.1095 |  0.209101 |       62 |
-| home ownership                        | OWN                                   |   31244 |     0.1384 | -0.058411 |       60 |
-| home ownership                        | OTHER, RENT                           |  148174 |     0.1538 | -0.181989 |       58 |
-| credit inquiries in the last 6 months | < 0.5                                 |  175845 |     0.1141 |  0.162199 |       65 |
-| credit inquiries in the last 6 months | 0.5 to < 1.5                          |   94485 |     0.1382 | -0.057149 |       58 |
-| credit inquiries in the last 6 months | 1.5 to < 2.5                          |   41556 |     0.1589 | -0.220619 |       53 |
-| credit inquiries in the last 6 months | >= 2.5                                |   26081 |     0.1816 | -0.381475 |       48 |
-| credit inquiries in the last 6 months | missing                               |      29 |     0.1034 | -0.381475 |       48 |
-| revolving credit utilisation (%)      | < 18.35                               |   26097 |     0.0931 |  0.389091 |       62 |
-| revolving credit utilisation (%)      | 18.35 to < 26.45                      |   19367 |     0.1044 |  0.26267  |       62 |
-| revolving credit utilisation (%)      | 26.45 to < 38.15                      |   40737 |     0.1158 |  0.145802 |       61 |
-| revolving credit utilisation (%)      | 38.15 to < 47.85                      |   42339 |     0.1262 |  0.048137 |       60 |
-| revolving credit utilisation (%)      | 47.85 to < 63.15                      |   75698 |     0.134  | -0.020652 |       60 |
-| revolving credit utilisation (%)      | 63.15 to < 73.25                      |   48035 |     0.1409 | -0.079414 |       60 |
-| revolving credit utilisation (%)      | 73.25 to < 86.35                      |   51399 |     0.1461 | -0.121359 |       59 |
-| revolving credit utilisation (%)      | >= 86.35                              |   34064 |     0.1615 | -0.239701 |       59 |
-| revolving credit utilisation (%)      | missing                               |     260 |     0.1731 | -0.239701 |       59 |
-| loan purpose                          | car, credit_card, major_purchase      |   91609 |     0.1104 |  0.199521 |       66 |
-| loan purpose                          | home_improvement                      |   18668 |     0.1153 |  0.150307 |       64 |
-| loan purpose                          | debt_consolidation                    |  190806 |     0.1365 | -0.042252 |       59 |
-| loan purpose                          | OTHER, medical, other, small_business |   36913 |     0.167  | -0.279968 |       52 |
+| characteristic                        | bin                                            |   loans |   bad_rate |       woe |   points |
+|:--------------------------------------|:-----------------------------------------------|--------:|-----------:|----------:|---------:|
+| FICO score                            | 664 or less                                    |   28709 |     0.1884 | -0.426483 |       50 |
+| FICO score                            | 665 to 674                                     |   57375 |     0.1739 | -0.328802 |       52 |
+| FICO score                            | 675 to 689                                     |   76338 |     0.1526 | -0.172627 |       56 |
+| FICO score                            | 690 to 699                                     |   43603 |     0.1314 |  0.001423 |       60 |
+| FICO score                            | 700 to 709                                     |   35346 |     0.1158 |  0.145461 |       64 |
+| FICO score                            | 710 to 729                                     |   46548 |     0.0962 |  0.353059 |       69 |
+| FICO score                            | 730 to 759                                     |   31137 |     0.0721 |  0.66776  |       76 |
+| FICO score                            | 760 or more                                    |   18940 |     0.0471 |  1.12022  |       87 |
+| FICO score                            | not given                                      |       0 |   nan      | -0.426483 |       50 |
+| annual income                         | below $27,300                                  |   20747 |     0.2012 | -0.5082   |       53 |
+| annual income                         | $27,300 to $37,100                             |   37944 |     0.1786 | -0.361095 |       55 |
+| annual income                         | $37,100 to $43,300                             |   30304 |     0.159  | -0.221329 |       57 |
+| annual income                         | $43,300 to $50,400                             |   39257 |     0.1447 | -0.110621 |       59 |
+| annual income                         | $50,400 to $62,000                             |   51309 |     0.1332 | -0.01442  |       60 |
+| annual income                         | $62,000 to $75,000                             |   49014 |     0.1189 |  0.115938 |       62 |
+| annual income                         | $75,000 to $100,100                            |   56870 |     0.1013 |  0.295557 |       65 |
+| annual income                         | $100,100 or more                               |   52547 |     0.0875 |  0.457655 |       67 |
+| annual income                         | not given                                      |       4 |     0      | -0.5082   |       53 |
+| debt-to-income ratio                  | below 10.7 %                                   |   82125 |     0.1043 |  0.262927 |       65 |
+| debt-to-income ratio                  | 10.7 % to 13.2 %                               |   36946 |     0.1124 |  0.179827 |       63 |
+| debt-to-income ratio                  | 13.2 % to 15.6 %                               |   37863 |     0.1191 |  0.114254 |       62 |
+| debt-to-income ratio                  | 15.6 % to 19.1 %                               |   52918 |     0.1304 |  0.009912 |       60 |
+| debt-to-income ratio                  | 19.1 % to 21.4 %                               |   32096 |     0.1407 | -0.077378 |       59 |
+| debt-to-income ratio                  | 21.4 % to 25.4 %                               |   44615 |     0.1517 | -0.165754 |       57 |
+| debt-to-income ratio                  | 25.4 % to 29.2 %                               |   28230 |     0.1689 | -0.293897 |       55 |
+| debt-to-income ratio                  | 29.2 % or more                                 |   23203 |     0.1849 | -0.403537 |       54 |
+| debt-to-income ratio                  | not given                                      |       0 |   nan      | -0.403537 |       54 |
+| loan amount / annual income           | below 7 % of income                            |   31880 |     0.1024 |  0.283572 |       66 |
+| loan amount / annual income           | 7 % to 12 % of income                          |   61484 |     0.1122 |  0.181283 |       64 |
+| loan amount / annual income           | 12 % to 16 % of income                         |   46205 |     0.1157 |  0.146256 |       63 |
+| loan amount / annual income           | 16 % to 20 % of income                         |   47661 |     0.1226 |  0.081373 |       62 |
+| loan amount / annual income           | 20 % to 23 % of income                         |   40610 |     0.1295 |  0.017849 |       61 |
+| loan amount / annual income           | 23 % to 27 % of income                         |   32102 |     0.1397 | -0.069407 |       59 |
+| loan amount / annual income           | 27 % to 33 % of income                         |   35093 |     0.159  | -0.221671 |       55 |
+| loan amount / annual income           | 33 % or more of income                         |   42957 |     0.1814 | -0.380146 |       52 |
+| loan amount / annual income           | not given                                      |       4 |     0      | -0.380146 |       52 |
+| number of mortgage accounts           | 0                                              |  130113 |     0.1581 | -0.214501 |       58 |
+| number of mortgage accounts           | 1                                              |   48019 |     0.1292 |  0.021146 |       60 |
+| number of mortgage accounts           | 2                                              |   38668 |     0.1163 |  0.141119 |       61 |
+| number of mortgage accounts           | 3                                              |   29241 |     0.1078 |  0.226377 |       62 |
+| number of mortgage accounts           | 4                                              |   21615 |     0.1034 |  0.2734   |       63 |
+| number of mortgage accounts           | 5 or more                                      |   32781 |     0.096  |  0.355022 |       63 |
+| number of mortgage accounts           | not given                                      |   37559 |     0.1244 |  0.064635 |       61 |
+| home ownership                        | owns with a mortgage                           |  158578 |     0.1095 |  0.209101 |       62 |
+| home ownership                        | owns outright                                  |   31244 |     0.1384 | -0.058411 |       60 |
+| home ownership                        | rents or other                                 |  148174 |     0.1538 | -0.181989 |       58 |
+| home ownership                        | not given                                      |       0 |   nan      | -0.181989 |       58 |
+| credit inquiries in the last 6 months | 0                                              |  175845 |     0.1141 |  0.162199 |       65 |
+| credit inquiries in the last 6 months | 1                                              |   94485 |     0.1382 | -0.057149 |       58 |
+| credit inquiries in the last 6 months | 2                                              |   41556 |     0.1589 | -0.220619 |       53 |
+| credit inquiries in the last 6 months | 3 or more                                      |   26081 |     0.1816 | -0.381475 |       48 |
+| credit inquiries in the last 6 months | not given                                      |      29 |     0.1034 | -0.381475 |       48 |
+| revolving credit utilisation (%)      | below 18.3 %                                   |   26097 |     0.0931 |  0.389091 |       62 |
+| revolving credit utilisation (%)      | 18.3 % to 26.4 %                               |   19367 |     0.1044 |  0.26267  |       62 |
+| revolving credit utilisation (%)      | 26.4 % to 38.1 %                               |   40737 |     0.1158 |  0.145802 |       61 |
+| revolving credit utilisation (%)      | 38.1 % to 47.9 %                               |   42339 |     0.1262 |  0.048137 |       60 |
+| revolving credit utilisation (%)      | 47.9 % to 63.1 %                               |   75698 |     0.134  | -0.020652 |       60 |
+| revolving credit utilisation (%)      | 63.1 % to 73.2 %                               |   48035 |     0.1409 | -0.079414 |       60 |
+| revolving credit utilisation (%)      | 73.2 % to 86.4 %                               |   51399 |     0.1461 | -0.121359 |       59 |
+| revolving credit utilisation (%)      | 86.4 % or more                                 |   34064 |     0.1615 | -0.239701 |       59 |
+| revolving credit utilisation (%)      | not given                                      |     260 |     0.1731 | -0.239701 |       59 |
+| loan purpose                          | car, paying off credit cards or major purchase |   91609 |     0.1104 |  0.199521 |       66 |
+| loan purpose                          | home improvement                               |   18668 |     0.1153 |  0.150307 |       64 |
+| loan purpose                          | debt consolidation                             |  190806 |     0.1365 | -0.042252 |       59 |
+| loan purpose                          | medical, small business or other               |   36913 |     0.167  | -0.279968 |       52 |
+| loan purpose                          | not given                                      |       0 |   nan      | -0.279968 |       52 |

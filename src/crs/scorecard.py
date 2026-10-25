@@ -12,7 +12,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
-from crs import binning
+from crs import binning, display
 
 BASE_SCORE, BASE_ODDS, PDO = 600, 50, 20
 FACTOR = PDO / math.log(2)
@@ -107,6 +107,8 @@ def build(specs, chosen, model):
         spec = dict(specs[name])
         spec["coef"] = float(coef)
         spec["description"] = DESCRIPTION.get(name, name)
+        spec["bins"] = spec["labels"]  # the exact cut points
+        spec["labels"] = display.labels(spec)  # the same bins, named for people
         spec["points"] = [int(round(-FACTOR * coef * w + base)) for w in spec["woe"]]
         card["characteristics"].append(spec)
     return card
@@ -138,7 +140,7 @@ def reasons(card, X, top=3):
     out = []
     for i, row in lost.iterrows():
         items = []
-        for name, gap in row.sort_values(ascending=False).items():
+        for name, gap in row.sort_values(ascending=False, kind="stable").items():
             if gap <= 0 or len(items) == top:
                 break
             c = labels[name]
