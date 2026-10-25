@@ -22,7 +22,7 @@ LGD = applicant.loss_rate()
 
 app = FastAPI(
     title="Credit-risk scorecard",
-    version="0.3.0",
+    version="1.0.0",
     description="Scores a 36-month personal loan application with a points scorecard trained on Lending Club "
     "loans 2007-2014. A portfolio project: not for real lending decisions.",
 )

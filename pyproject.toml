@@ -1,6 +1,6 @@
 [project]
 name = "credit-risk-scorecard"
-version = "0.1.0"
+version = "1.0.0"
 description = "A loan scorecard built like a bank would build it: out-of-time validation, decline reasons, profit-based cut-off and drift monitoring"
 requires-python = ">=3.12"
 dependencies = [
