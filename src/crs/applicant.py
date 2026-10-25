@@ -6,6 +6,8 @@ The API uses this module, and docs/scorer.js does the same in the browser from d
 Decision, by risk-based pricing: the lowest annual rate at which a 36-month loan breaks even in expectation,
 (1 - PD) x (instalments - amount) = PD x loss rate x amount, after the 1 % investor fee.
 If even Lending Club's highest rate (30.99 %) does not cover the risk, decline.
+Before any of this, the lending rules in crs/policy.py: an application outside what the lender ever approved
+(a loan of 8x income, FICO 550, ...) is declined without trusting the score, which has no evidence there.
 Policy limit: also decline above a 40 % chance of default. In 2007-2014 the return on money lent fell with every
 PD band and reached zero there (161 loans above 40 %: +0.2 %), and the scorecard has almost no evidence beyond it.
 """
@@ -14,7 +16,7 @@ import json
 
 import pandas as pd
 
-from crs import binning, config, scorecard, strategy
+from crs import binning, config, policy, scorecard, strategy
 
 CARD_PATH = config.ROOT / "models" / "scorecard.json"
 STRATEGY_PATH = config.ROOT / "models" / "strategy.json"
@@ -83,7 +85,10 @@ def score_application(application, card=None, lgd=None):
     total = int(pts.sum())
     pd_ = float(scorecard.pd_from_score(total))
     rate = break_even_rate(pd_, lgd)
-    if pd_ > MAX_PD:
+    broken = policy.check(application, rate if rate is not None else 1.0)
+    if broken:
+        decision, why = "decline", "lending rule"
+    elif pd_ > MAX_PD:
         decision, why = "decline", "pd above policy limit"
     elif rate is None or rate > MAX_RATE:
         decision, why = "decline", "no rate covers the expected loss"
@@ -107,6 +112,7 @@ def score_application(application, card=None, lgd=None):
         "break_even_rate": None if rate is None else round(rate, 4),
         "decision": decision,
         "decision_rule": why,
+        "rules_broken": broken,
         "reasons": scorecard.reasons(card, X)[0],
         "points": lines,
     }
@@ -123,6 +129,7 @@ def page_card(card=None, lgd=None):
         "loss_rate": lgd if lgd is not None else loss_rate(),
         "max_rate": MAX_RATE,
         "max_pd": MAX_PD,
+        "policy": policy.as_dict(),
         "fee": strategy.SERVICE_FEE,
         "term": strategy.TERM,
         "fitted_on": card.get("fitted_on"),

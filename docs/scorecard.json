@@ -9,6 +9,73 @@
  "loss_rate": 0.3652,
  "max_rate": 0.3099,
  "max_pd": 0.4,
+ "policy": {
+  "assumed_rate": 0.1264,
+  "required": {
+   "fico_score": "FICO score not given",
+   "annual_income": "annual income not given",
+   "loan_amount": "loan amount not given",
+   "debt_to_income": "debt-to-income not given"
+  },
+  "rules": [
+   {
+    "name": "min_fico",
+    "field": "fico_score",
+    "limit": 660,
+    "how": "below",
+    "text": "FICO score below 660"
+   },
+   {
+    "name": "min_income",
+    "field": "annual_income",
+    "limit": 10000,
+    "how": "below",
+    "text": "annual income below $10,000"
+   },
+   {
+    "name": "max_loan",
+    "field": "loan_amount",
+    "limit": 35000,
+    "how": "above",
+    "text": "loan above $35,000"
+   },
+   {
+    "name": "max_loan_to_income",
+    "field": "loan_to_income",
+    "limit": 0.5,
+    "how": "above",
+    "text": "loan above 50 % of annual income"
+   },
+   {
+    "name": "max_dti",
+    "field": "debt_to_income",
+    "limit": 40,
+    "how": "above",
+    "text": "debt-to-income above 40 % before this loan"
+   },
+   {
+    "name": "max_dti_with_loan",
+    "field": "dti_with_loan",
+    "limit": 50,
+    "how": "above",
+    "text": "debt-to-income above 50 % including this loan's payment"
+   },
+   {
+    "name": "max_inquiries",
+    "field": "inquiries_last_6_months",
+    "limit": 7,
+    "how": "above",
+    "text": "more than 7 credit inquiries in 6 months"
+   },
+   {
+    "name": "max_utilisation",
+    "field": "revolving_utilisation",
+    "limit": 100,
+    "how": "above",
+    "text": "revolving balances above the credit limit (over 100 %)"
+   }
+  ]
+ },
  "fee": 0.01,
  "term": 36,
  "fitted_on": "36-month loans issued 2007-2014 (337,996 loans)",

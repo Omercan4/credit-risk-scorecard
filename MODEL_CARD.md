@@ -50,6 +50,10 @@ and from one lender's approved loans only.
 - Recalibrating on 2014 does not fix it: 2014 itself was safer than 2015. The ranking holds, but the level drifted.
 
 ## Decision rule
+- **Lending rules first** ([`reports/policy.md`](reports/policy.md)):
+  - **The limits:** FICO at least 660, income at least $10,000, loan at most $35,000 and at most 50 % of income, debt-to-income at most 40 % before and 50 % including the new payment, at most 7 inquiries in 6 months, utilisation at most 100 %. FICO, income, loan amount and debt-to-income must be given.
+  - **Where they come from:** each limit sits at the edge of the approved 2007–2014 loans, where the scorecard's evidence ends. Without them, the open-ended last bins scored a loan of 8 times income like a loan of 0.6 times, and approved it.
+  - **Effect on the approved loans:** together the rules would have declined 1.06 % of them, which defaulted at 24.7 % against 13.0 % for the rest.
 - **Price:** the lowest annual rate at which the loan breaks even in expectation, (1 − PD) × gain = PD × 36.5 % loss rate, after a 1 % fee. Decline if even 30.99 % (Lending Club's highest rate) does not cover it.
 - **Policy limit:** decline above a 40 % PD. The return on money lent in 2007–2014 fell with every PD band and reached zero there (161 loans, +0.2 %), and the model has almost no evidence beyond it.
 - **Result on 2015:** at Lending Club's prices almost every approved loan was worth funding, so a profit rule declines under 1 % and changes profit by less than 1 M USD on 3.6 billion lent.

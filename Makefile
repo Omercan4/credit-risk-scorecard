@@ -1,7 +1,7 @@
 PY ?= .venv/bin/python
 export PYTHONPATH := src
 
-.PHONY: install download data synthetic population scorecard validate strategy monitor page serve test lint
+.PHONY: install download data synthetic population scorecard validate strategy monitor policy page serve test lint
 install:
 	python3.12 -m venv .venv && .venv/bin/pip install -e ".[download,report,dev]"
 download:
@@ -20,6 +20,8 @@ strategy:
 	$(PY) -m crs.cli strategy
 monitor:
 	$(PY) -m crs.cli monitor
+policy:
+	$(PY) -m crs.cli policy
 page:
 	$(PY) -m crs.cli page
 serve:

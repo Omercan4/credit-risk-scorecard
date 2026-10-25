@@ -21,7 +21,7 @@ plt.rcParams["font.sans-serif"] = ["Helvetica Neue", "Arial", "DejaVu Sans"]
 
 EXAMPLE = {  # the "stretched file" on the page
     "fico_score": 662, "inquiries_last_6_months": 3, "revolving_utilisation": 92, "mortgage_accounts": 0,
-    "annual_income": 26000, "debt_to_income": 34, "home_ownership": "RENT", "loan_amount": 15000, "purpose": "small_business",
+    "annual_income": 26000, "debt_to_income": 25, "home_ownership": "RENT", "loan_amount": 10000, "purpose": "small_business",
 }
 
 

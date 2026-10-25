@@ -4,7 +4,7 @@ import argparse
 
 import pandas as pd
 
-from crs import applicant, config, decision, develop, monitor, target, validation
+from crs import applicant, config, decision, develop, monitor, policy, target, validation
 from crs.data import download, fixture, load, quality
 
 
@@ -68,6 +68,10 @@ def cmd_page(args):
     print(f"Wrote {applicant.export_page_card()}")
 
 
+def cmd_policy(args):
+    policy.run(load.load(config.LOANS_PATH))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="crs")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -85,6 +89,7 @@ def main(argv=None):
         func=cmd_strategy
     )
     sub.add_parser("monitor", help="PSI/CSI and early defaults per quarter from 2015").set_defaults(func=cmd_monitor)
+    sub.add_parser("policy", help="evidence for the lending rules that run before the score").set_defaults(func=cmd_policy)
     sub.add_parser("page", help="export the scorecard for the web page (docs/scorecard.json)").set_defaults(func=cmd_page)
     sub.add_parser("validate", help="out-of-time test on 2015 vs benchmark and challenger").set_defaults(func=cmd_validate)
     args = parser.parse_args(argv)

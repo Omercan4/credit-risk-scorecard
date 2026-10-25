@@ -58,6 +58,39 @@
     return high;
   }
 
+  function monthlyPayment(amount, rate, term) {
+    const m = rate / 12;
+    return amount * m / (1 - Math.pow(1 + m, -term));
+  }
+
+  // The lending rules that run before the score (src/crs/policy.py). A missing value breaks no rule.
+  function checkRules(card, app, rate) {
+    const p = card.policy, values = Object.assign({}, app);
+    const r = Math.max(rate, p.assumed_rate);
+    values.loan_to_income = null;
+    values.dti_with_loan = null;
+    if (!missing(app.loan_amount) && !missing(app.annual_income) && Number(app.annual_income) > 0) {
+      values.loan_to_income = Number(app.loan_amount) / Number(app.annual_income);
+      if (!missing(app.debt_to_income)) {
+        values.dti_with_loan = Number(app.debt_to_income) +
+          100 * monthlyPayment(Number(app.loan_amount), r, card.term) / (Number(app.annual_income) / 12);
+      }
+    }
+    const broken = [];
+    Object.keys(p.required).forEach(function (field) {
+      if (missing(app[field])) broken.push({ rule: "required", text: p.required[field], value: null, limit: null });
+    });
+    p.rules.forEach(function (rule) {
+      const v = values[rule.field];
+      if (missing(v)) return;
+      const x = Number(v);
+      if ((rule.how === "below" && x < rule.limit) || (rule.how === "above" && x > rule.limit)) {
+        broken.push({ rule: rule.name, text: rule.text, value: Math.round(x * 1e4) / 1e4, limit: rule.limit });
+      }
+    });
+    return broken;
+  }
+
   function score(card, app) {
     const x = characteristics(app);
     const lines = card.characteristics.map(function (c) {
@@ -83,7 +116,9 @@
         return { characteristic: r.l.characteristic, text: r.l.description + ": " + r.l.bin, points_lost: r.gap };
       });
     let decision = "approve", rule = "rate covers the expected loss";
-    if (pd > card.max_pd) { decision = "decline"; rule = "pd above policy limit"; }
+    const broken = checkRules(card, app, rate === null ? 1 : rate);
+    if (broken.length) { decision = "decline"; rule = "lending rule"; }
+    else if (pd > card.max_pd) { decision = "decline"; rule = "pd above policy limit"; }
     else if (rate === null || rate > card.max_rate) { decision = "decline"; rule = "no rate covers the expected loss"; }
     return {
       score: total,
@@ -91,6 +126,7 @@
       break_even_rate: rate === null ? null : Math.round(rate * 1e4) / 1e4,
       decision: decision,
       decision_rule: rule,
+      rules_broken: broken,
       reasons: reasons,
       points: lines,
     };

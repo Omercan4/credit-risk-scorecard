@@ -84,6 +84,9 @@
   .facts div { border-top: 1px solid var(--rule-strong); padding-top: 6px; }
   .facts dt { color: var(--muted); font-size: .82rem; }
   .facts dd { margin: 0; font-size: 1.25rem; font-weight: 650; }
+  .facts .hint { display: block; color: var(--muted); font-size: .78rem; line-height: 1.3; }
+  .rules { margin: 6px 0 0; padding-left: 1.2em; color: var(--decline); }
+  .slip.ruled .total .n, .slip.ruled .facts dd { color: var(--muted); }
   .stamp {
     display: inline-block; margin: 16px 0 8px; padding: 6px 14px; border: 3px solid currentColor; border-radius: 6px;
     font-weight: 800; font-size: 1.15rem; letter-spacing: .04em; transform: rotate(-2deg);
@@ -178,7 +181,8 @@
       <div class="total"><span>Score</span><span class="n" id="total">–</span></div>
       <dl class="facts">
         <div><dt>Chance of default within 3 years</dt><dd id="pd">–</dd></div>
-        <div><dt>Interest rate that covers expected losses</dt><dd id="rate">–</dd></div>
+        <div><dt>Interest rate that covers expected losses</dt><dd id="rate">–</dd>
+          <small class="hint">Losses only: a lender adds funding and running costs on top.</small></div>
       </dl>
       <div id="stamp" class="stamp" hidden></div>
       <div id="reasons"></div>
@@ -239,7 +243,7 @@
     typical: { fico_score: 695, inquiries_last_6_months: 1, revolving_utilisation: 55, mortgage_accounts: 1, annual_income: 60000,
                debt_to_income: 18, home_ownership: "RENT", loan_amount: 12000, purpose: "debt_consolidation" },
     thin: { fico_score: 662, inquiries_last_6_months: 3, revolving_utilisation: 92, mortgage_accounts: 0, annual_income: 26000,
-            debt_to_income: 34, home_ownership: "RENT", loan_amount: 15000, purpose: "small_business" },
+            debt_to_income: 25, home_ownership: "RENT", loan_amount: 10000, purpose: "small_business" },
   };
   const form = document.getElementById("app");
   const numeric = ["fico_score", "inquiries_last_6_months", "revolving_utilisation", "mortgage_accounts", "annual_income", "debt_to_income", "loan_amount"];
@@ -276,7 +280,8 @@
     }).join("");
     document.getElementById("total").textContent = r.score;
     document.getElementById("pd").textContent = pct(r.pd, 1);
-    document.getElementById("rate").textContent = r.break_even_rate === null ? "above 100 %" : pct(r.break_even_rate, 1);
+    document.getElementById("rate").textContent = r.decision === "decline" ? "no offer"
+      : pct(r.break_even_rate, 1);
 
     const stamp = document.getElementById("stamp");
     stamp.hidden = false;
@@ -288,7 +293,18 @@
     }
     lastDecision = r.decision;
 
+    const slip = document.querySelector(".slip");
+    slip.classList.toggle("ruled", r.decision_rule === "lending rule");
     let head;
+    if (r.decision_rule === "lending rule") {
+      const required = r.rules_broken.filter(function (b) { return b.rule === "required"; });
+      const intro = required.length && required.length === r.rules_broken.length
+        ? "Not enough information to decide:"
+        : "Declined by a lending rule, before the score counts. The scorecard learned only from loans inside these limits, so it is not trusted outside them:";
+      document.getElementById("reasons").innerHTML = "<p>" + escape(intro) + '</p><ul class="rules">' +
+        r.rules_broken.map(function (b) { return "<li>" + escape(b.text) + "</li>"; }).join("") + "</ul>";
+      return;
+    }
     if (r.decision_rule === "pd above policy limit") {
       head = "A default chance above " + pct(card.max_pd, 0) + " is past the policy limit: loans like this earned nothing in 2007–2014. Main reasons:";
     } else if (r.decision === "decline") {
