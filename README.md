@@ -1,7 +1,17 @@
-# Credit-risk scorecard (work in progress)
+# Credit-risk scorecard
 
 A loan scorecard built the way a bank would build it: from raw loans to an approve/decline rule with reasons,
-validated on later loans than it was trained on, and a monitor that warns when the applicants change.
+validated on later loans than it was trained on. Data: 2.26 M Lending Club loans, 2007–2018.
+Status: v0.1, milestones 3.0–3.4 done (monitoring, API and a public page come next).
+
+**Results on 283,026 loans from 2015, a year never used for any choice:**
+- A 9-characteristic points scorecard ranks risk with **Gini 0.30**, and a LightGBM challenger reaches **0.34**. Lending Club's own grade, built with the full credit report, reaches 0.36. Both models beat that grade until 2012, and it pulled ahead as Lending Club improved it.
+- **Every decline comes with its top 3 reasons,** read straight from the points table. An example: *FICO below 665 (−37 points), 3+ inquiries in 6 months (−17), income below 27,300 (−14).*
+- **All models under-predict 2015 defaults** (13.5 % vs 14.9 %), because 2015 was riskier than any training year. The ranking holds, but the level drifted.
+- **Money:** at Lending Club's prices, almost every approved loan was worth funding, so a profit rule declines under 1 %. The scorecard is worth money when choosing *which* loans to fund. An investor funding half of the 2015 loans by the scorecard earns 6.29 % on money lent, against 6.09 % when picking Lending Club's best grades. The challenger earns 6.60 %.
+- **What the models never saw:** 63 % of the rejected applicants had a risk score below 660, which no approved loan had.
+
+Not for real lending decisions.
 
 ## The task
 
@@ -120,6 +130,57 @@ In real use this is caught by monitoring (milestone 3.5): the default level is c
 
 **Why the leakage rules matter:** one post-loan column alone (share of principal repaid) ranks the 2015 loans with Gini 1.0.
 
+## Approve or decline: what is it worth?
+
+Full report: [`reports/strategy.md`](reports/strategy.md). Economics from 2007–2014: a defaulted loan loses **36.5 %** of the amount lent
+(after what was paid before the default, and recoveries). A repaid loan earns on average 19.6 % over its term.
+The rule is to approve when the expected profit is positive: (1 − PD) × gain − PD × loss > 0, using each loan's own price for the gain,
+after Lending Club's 1 % investor fee and without discounting.
+
+**On 2015 loans, counted in money actually paid (million USD, 3,624 M lent):**
+
+| | approved | default rate | profit | declined loans | their default rate |
+|---|---:|---:|---:|---:|---:|
+| Approve everyone (what was funded) | 100 % | 14.9 % | 198.8 | 0 | |
+| Scorecard rule | 99.7 % | 14.9 % | 198.5 | 913 | 18.2 % |
+| Challenger rule | 99.4 % | 14.8 % | 198.8 | 1,762 | 27.8 % |
+| Challenger, declining the same 913 | 99.7 % | 14.8 % | 199.4 | 913 | 43.6 % |
+
+**This is the finding of this milestone: once Lending Club had approved and priced a loan, declining it almost never paid.**
+Riskier loans paid higher interest, and the price covered the risk. The rule's value is not in cutting loans from this book. The challenger's better ranking is visible in whom it declines (43.6 % of them defaulted, against 18.2 % for the scorecard's choices), but that is worth only 0.9 M USD here.
+
+**Where the ranking is worth money: choosing which loans to fund.** An investor who can fund only part of the loans and picks the safest:
+
+| fund the safest … by | 25 % | 50 % | 75 % |
+|---|---:|---:|---:|
+| Lending Club sub-grade | 5.81 % | 6.09 % | 6.03 % |
+| Scorecard | 6.40 % | 6.29 % | 6.01 % |
+| LightGBM challenger | **6.65 %** | **6.60 %** | **6.24 %** |
+
+These are returns on money lent. Picking by Lending Club's grade selects the cheapest loans, which also earn the least interest. The models find applicants who are safer than their price suggests.
+At 50 %, the scorecard beats the grade by +0.20 points (95 % interval +0.13 to +0.30), and the challenger beats the scorecard by +0.32 points (+0.25 to +0.37).
+
+![Profit by approval rate](docs/img/strategy.png)
+
+**Champion decision, updated:** the challenger earns more in every comparison, about 4.4 M USD on 2 billion lent at 50 % funding.
+That is the price of the scorecard's explainability. The next step would be SHAP reason codes for the challenger, checked to be stable before it declines anyone.
+Until then the scorecard stays champion, and the challenger is the documented, quantified alternative.
+
+**Reject bias:** these models learned only from approved loans. Lending Club turned down 6.3 M applications in 2007–2015:
+
+| 2007–2015 | approved | rejected |
+|---|---:|---:|
+| applications | 887,440 | 6,309,512 |
+| median risk score | 692 | 641 |
+| risk score below 660 | 0.1 % | 62.8 % |
+| debt-to-income above 40 % | 0 % | 17 % |
+
+![Rejected vs approved applicants](docs/img/reject_bias.png)
+
+The scorecard's lowest FICO bin, "below 664.5", was learned from approved applicants scoring around 660–664. Its PD for someone scoring 580 is a pure extrapolation, and almost certainly too low.
+Scoring the full applicant pool would need reject inference (for example parcelling, or buying bureau outcomes for rejected applicants). That is listed as next work, not claimed.
+The rejected file has no outcomes and only five usable columns. Its employment-length field is not used: its share of "< 1 year" jumps from 27 % to 85 % around 2010, which looks like a form default.
+
 ## Run it
 
 ```bash
@@ -130,6 +191,7 @@ make data          # clean the raw CSV into data/processed/loans.parquet and pri
 make population    # who is in the modelling population, default rate by year
 make scorecard     # time cross-validation, then fit the scorecard (models/, reports/)
 make validate      # out-of-time test on 2015 vs Lending Club's grade and the LightGBM challenger
+make strategy      # profit-based approve/decline rule on 2015, investor view, reject bias
 make test
 ```
 
@@ -145,7 +207,7 @@ The tests and CI use a synthetic fixture ([`src/crs/data/fixture.py`](src/crs/da
 - [x] 3.1 target, population, time folds and the leakage gate
 - [x] 3.2 WoE binning and points scorecard with decline reasons
 - [x] 3.3 challenger model, calibration and out-of-time validation
-- [ ] 3.4 profit-based cut-off and reject bias
+- [x] 3.4 profit-based cut-off and reject bias
 - [ ] 3.5 drift monitoring (PSI/CSI, vintages)
 - [ ] 3.6 API and public page
 - [ ] 3.7 model card and packaging

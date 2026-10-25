@@ -4,7 +4,7 @@ import argparse
 
 import pandas as pd
 
-from crs import config, develop, target, validation
+from crs import config, decision, develop, target, validation
 from crs.data import download, fixture, load, quality
 
 
@@ -56,6 +56,10 @@ def cmd_validate(args):
     validation.run(load.load(config.LOANS_PATH))
 
 
+def cmd_strategy(args):
+    decision.run(load.load(config.LOANS_PATH))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="crs")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -69,6 +73,9 @@ def main(argv=None):
     card = sub.add_parser("scorecard", help="time cross-validation on 2007-2014, then fit the scorecard")
     card.add_argument("--synthetic", action="store_true", help="use the fake loans from `data --synthetic`")
     card.set_defaults(func=cmd_scorecard)
+    sub.add_parser("strategy", help="profit-based approve/decline rule on 2015, and reject bias").set_defaults(
+        func=cmd_strategy
+    )
     sub.add_parser("validate", help="out-of-time test on 2015 vs benchmark and challenger").set_defaults(func=cmd_validate)
     args = parser.parse_args(argv)
     args.func(args)

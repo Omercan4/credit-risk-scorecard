@@ -1,0 +1,142 @@
+{
+ "loss_rate_if_default": 0.3652,
+ "mean_gain_if_repaid": 0.1957,
+ "oot_2015": {
+  "Approve everyone (what was funded)": {
+   "approval_rate": 1.0,
+   "bad_rate": 0.1489,
+   "profit_musd": 198.82,
+   "declined_loans": 0,
+   "declined_bad_rate": null
+  },
+  "Scorecard rule (expected profit > 0)": {
+   "approval_rate": 0.9968,
+   "bad_rate": 0.1488,
+   "profit_musd": 198.47,
+   "declined_loans": 913,
+   "declined_bad_rate": 0.1818
+  },
+  "Challenger rule (expected profit > 0)": {
+   "approval_rate": 0.9938,
+   "bad_rate": 0.1481,
+   "profit_musd": 198.81,
+   "declined_loans": 1762,
+   "declined_bad_rate": 0.2781
+  },
+  "Challenger at the scorecard's approval rate": {
+   "approval_rate": 0.9968,
+   "bad_rate": 0.1479,
+   "profit_musd": 199.38,
+   "declined_loans": 913,
+   "declined_bad_rate": 0.4359
+  }
+ },
+ "hindsight_best": {
+  "Scorecard": {
+   "approval_rate": 1.0,
+   "profit_musd": 198.816
+  },
+  "LightGBM challenger": {
+   "approval_rate": 0.98,
+   "profit_musd": 199.987
+  },
+  "Lending Club sub-grade": {
+   "approval_rate": 0.99,
+   "profit_musd": 199.351
+  }
+ },
+ "investor": {
+  "fund 25 %": {
+   "Scorecard": {
+    "profit_musd": 67.52,
+    "lent_musd": 1055.8,
+    "return_on_lent": 0.064,
+    "bad_rate": 0.0669
+   },
+   "LightGBM challenger": {
+    "profit_musd": 69.88,
+    "lent_musd": 1050.8,
+    "return_on_lent": 0.0665,
+    "bad_rate": 0.0583
+   },
+   "Lending Club sub-grade": {
+    "profit_musd": 59.46,
+    "lent_musd": 1023.6,
+    "return_on_lent": 0.0581,
+    "bad_rate": 0.0548
+   }
+  },
+  "fund 50 %": {
+   "Scorecard": {
+    "profit_musd": 124.78,
+    "lent_musd": 1984.1,
+    "return_on_lent": 0.0629,
+    "bad_rate": 0.094
+   },
+   "LightGBM challenger": {
+    "profit_musd": 129.15,
+    "lent_musd": 1955.4,
+    "return_on_lent": 0.066,
+    "bad_rate": 0.0862
+   },
+   "Lending Club sub-grade": {
+    "profit_musd": 117.0,
+    "lent_musd": 1920.4,
+    "return_on_lent": 0.0609,
+    "bad_rate": 0.0825
+   }
+  },
+  "fund 75 %": {
+   "Scorecard": {
+    "profit_musd": 170.41,
+    "lent_musd": 2834.8,
+    "return_on_lent": 0.0601,
+    "bad_rate": 0.1189
+   },
+   "LightGBM challenger": {
+    "profit_musd": 174.45,
+    "lent_musd": 2794.5,
+    "return_on_lent": 0.0624,
+    "bad_rate": 0.114
+   },
+   "Lending Club sub-grade": {
+    "profit_musd": 166.09,
+    "lent_musd": 2756.7,
+    "return_on_lent": 0.0603,
+    "bad_rate": 0.1123
+   }
+  }
+ },
+ "investor_50_return_diff": {
+  "scorecard minus sub-grade": {
+   "diff": 0.002,
+   "low": 0.0013,
+   "high": 0.003
+  },
+  "challenger minus scorecard": {
+   "diff": 0.0032,
+   "low": 0.0025,
+   "high": 0.0037
+  }
+ },
+ "reject_bias": {
+  "accepted": {
+   "applications": 887440.0,
+   "risk score known": 1.0,
+   "median risk score": 692.0,
+   "share below 660": 0.001,
+   "median DTI (%)": 17.7,
+   "share DTI above 40 %": 0.0,
+   "median amount": 13000.0
+  },
+  "rejected": {
+   "applications": 6309512.0,
+   "risk score known": 0.58,
+   "median risk score": 641.0,
+   "share below 660": 0.628,
+   "median DTI (%)": 17.1,
+   "share DTI above 40 %": 0.17,
+   "median amount": 10000.0
+  }
+ }
+}
