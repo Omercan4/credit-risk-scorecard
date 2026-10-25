@@ -12,10 +12,12 @@ dependencies = [
     "joblib==1.6.0",
     "optbinning==1.0.0",
     "tabulate==0.10.0",
+    "lightgbm==4.7.0",
 ]
 
 [project.optional-dependencies]
 download = ["kaggle==2.2.5"]
+report = ["matplotlib==3.11.2"]
 dev = ["pytest>=8", "ruff>=0.5"]
 
 [tool.setuptools.packages.find]

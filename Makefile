@@ -1,9 +1,9 @@
 PY ?= .venv/bin/python
 export PYTHONPATH := src
 
-.PHONY: install download data synthetic population scorecard test lint
+.PHONY: install download data synthetic population scorecard validate test lint
 install:
-	python3.12 -m venv .venv && .venv/bin/pip install -e ".[download,dev]"
+	python3.12 -m venv .venv && .venv/bin/pip install -e ".[download,report,dev]"
 download:
 	$(PY) -m crs.cli download
 data:
@@ -14,6 +14,8 @@ population:
 	$(PY) -m crs.cli population
 scorecard:
 	$(PY) -m crs.cli scorecard
+validate:
+	$(PY) -m crs.cli validate
 test:
 	.venv/bin/pytest -q
 lint:

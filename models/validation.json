@@ -1,0 +1,122 @@
+{
+ "oot_year": 2015,
+ "oot_loans": 283026,
+ "oot_bad_rate": 0.1489,
+ "dev_bad_rate": 0.1316,
+ "challenger_trees": 177,
+ "models": {
+  "Lending Club sub-grade (benchmark)": {
+   "gini": 0.3573,
+   "ks": 0.2619,
+   "brier": 0.1211,
+   "mean_pd": 0.1281
+  },
+  "Scorecard, raw PD": {
+   "gini": 0.3029,
+   "ks": 0.2177,
+   "brier": 0.1224,
+   "mean_pd": 0.1346
+  },
+  "Scorecard, recalibrated on 2014": {
+   "gini": 0.3029,
+   "ks": 0.2177,
+   "brier": 0.1224,
+   "mean_pd": 0.1334
+  },
+  "LightGBM challenger": {
+   "gini": 0.3429,
+   "ks": 0.2489,
+   "brier": 0.1211,
+   "mean_pd": 0.1329
+  }
+ },
+ "gini_diff": {
+  "challenger minus scorecard": {
+   "diff": 0.04,
+   "low": 0.0374,
+   "high": 0.0422
+  },
+  "scorecard minus sub-grade": {
+   "diff": -0.0544,
+   "low": -0.0592,
+   "high": -0.0493
+  },
+  "challenger minus sub-grade": {
+   "diff": -0.0144,
+   "low": -0.0187,
+   "high": -0.0101
+  }
+ },
+ "leak_demo_gini": 1.0,
+ "gini_by_year": {
+  "2011": {
+   "scorecard": 0.3423,
+   "challenger": 0.3593,
+   "sub-grade": 0.2702
+  },
+  "2012": {
+   "scorecard": 0.2923,
+   "challenger": 0.2958,
+   "sub-grade": 0.2387
+  },
+  "2013": {
+   "scorecard": 0.2732,
+   "challenger": 0.307,
+   "sub-grade": 0.2981
+  },
+  "2014": {
+   "scorecard": 0.2919,
+   "challenger": 0.3239,
+   "sub-grade": 0.3191
+  },
+  "2015": {
+   "scorecard": 0.3029,
+   "challenger": 0.3429,
+   "sub-grade": 0.3573
+  }
+ },
+ "gini_by_quarter": {
+  "Q1": {
+   "scorecard": 0.2957,
+   "sub-grade": 0.3458,
+   "challenger": 0.3363
+  },
+  "Q2": {
+   "scorecard": 0.2981,
+   "sub-grade": 0.3537,
+   "challenger": 0.335
+  },
+  "Q3": {
+   "scorecard": 0.3094,
+   "sub-grade": 0.3626,
+   "challenger": 0.3513
+  },
+  "Q4": {
+   "scorecard": 0.3057,
+   "sub-grade": 0.3638,
+   "challenger": 0.3457
+  }
+ },
+ "gini_by_purpose": {
+  "debt_consolidation": {
+   "loans": 160983,
+   "scorecard": 0.2928
+  },
+  "credit_card": {
+   "loans": 70650,
+   "scorecard": 0.3273
+  },
+  "home_improvement": {
+   "loans": 17160,
+   "scorecard": 0.2894
+  },
+  "other": {
+   "loans": 15227,
+   "scorecard": 0.2601
+  },
+  "major_purchase": {
+   "loans": 5342,
+   "scorecard": 0.2985
+  }
+ }
+}

@@ -81,6 +81,45 @@ What did not help, and decisions I made:
 - **A missing value never earns points:** a missing bin with fewer than 1 % of loans gets the points of the riskiest bin. Without this rule, the 29 applicants without an inquiry count got the top score for that characteristic by chance.
 - **The number of mortgage accounts was only recorded from 2012 on.** Its missing bin therefore mostly stands for "older loan", and it is never used for new applicants.
 
+## Out-of-time test: 2015
+
+283,026 loans issued in 2015 that were never used for any choice. Full report: [`reports/validation.md`](reports/validation.md).
+
+| | Gini | KS | Brier | mean predicted PD (observed: 14.9 %) |
+|---|---:|---:|---:|---:|
+| Lending Club sub-grade (benchmark) | **0.357** | 0.262 | 0.121 | 12.8 % |
+| LightGBM challenger (monotone constraints) | 0.343 | 0.249 | 0.121 | 13.3 % |
+| Scorecard | 0.303 | 0.218 | 0.122 | 13.5 % |
+
+Differences with 95 % bootstrap intervals: challenger − scorecard **+0.040** (0.037 to 0.042), scorecard − sub-grade −0.054 (−0.059 to −0.049).
+
+**The result I hoped for did not happen: neither model beats Lending Club's own grade in 2015.** The same comparison on every test year shows why:
+
+| test year | scorecard | challenger | Lending Club sub-grade |
+|---|---:|---:|---:|
+| 2011 | 0.342 | 0.359 | 0.270 |
+| 2012 | 0.292 | 0.296 | 0.239 |
+| 2013 | 0.273 | 0.307 | 0.298 |
+| 2014 | 0.292 | 0.324 | 0.319 |
+| 2015 | 0.303 | 0.343 | 0.357 |
+
+Both models beat the grade until 2012. But Lending Club's grade improved every year (0.24 → 0.36), while these models see only 22 application fields. Lending Club priced loans with the full credit report and its own platform data.
+The fair claim is therefore: *with application data alone, a challenger comes within 0.014 Gini of the lender's production grade.*
+
+![Calibration on 2015](docs/img/calibration.png)
+
+**Calibration:** all three models predict too few defaults in 2015 (13.3–13.5 % predicted vs 14.9 % observed), in every band, because 2015 was a riskier year than any development year.
+Recalibrating on 2014 changes almost nothing, since 2014 itself was safer than 2015. The ranking holds, but the level moved.
+In real use this is caught by monitoring (milestone 3.5): the default level is checked as outcomes arrive, and the PD is shifted when it drifts.
+
+**Champion or challenger?**
+- **The challenger is clearly better at ranking:** +0.04 Gini, and it is ahead in every test year, not just 2015.
+- **I tried to close the gap inside the scorecard:** two ratio characteristics (revolving balance / income, open / total credit lines), tested in the development cross-validation only. Mean Gini went from 0.302 to 0.300, no gain. The gap comes from interactions an additive scorecard cannot represent.
+- **The challenger is not explainable for free.** It needs per-applicant reason codes (SHAP), and those must be checked to be stable and fair before it can decline anyone. Its monotone constraints help: a higher FICO score or income can never raise its PD (tested).
+- **Decision:** the scorecard stays the explainable champion for now. The challenger becomes champion only if its extra Gini is worth real money at the chosen cut-off (milestone 3.4 computes this for both) and its reason codes pass review.
+
+**Why the leakage rules matter:** one post-loan column alone (share of principal repaid) ranks the 2015 loans with Gini 1.0.
+
 ## Run it
 
 ```bash
@@ -90,6 +129,7 @@ make download      # real data (about 650 MB), needs a Kaggle API token in ~/.ka
 make data          # clean the raw CSV into data/processed/loans.parquet and print the data checks
 make population    # who is in the modelling population, default rate by year
 make scorecard     # time cross-validation, then fit the scorecard (models/, reports/)
+make validate      # out-of-time test on 2015 vs Lending Club's grade and the LightGBM challenger
 make test
 ```
 
@@ -104,7 +144,7 @@ The tests and CI use a synthetic fixture ([`src/crs/data/fixture.py`](src/crs/da
 - [x] 3.0 scaffold, data cleaning, data checks
 - [x] 3.1 target, population, time folds and the leakage gate
 - [x] 3.2 WoE binning and points scorecard with decline reasons
-- [ ] 3.3 challenger model, calibration and out-of-time validation
+- [x] 3.3 challenger model, calibration and out-of-time validation
 - [ ] 3.4 profit-based cut-off and reject bias
 - [ ] 3.5 drift monitoring (PSI/CSI, vintages)
 - [ ] 3.6 API and public page
