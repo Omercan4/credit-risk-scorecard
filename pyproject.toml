@@ -1,0 +1,31 @@
+[project]
+name = "credit-risk-scorecard"
+version = "0.1.0"
+description = "A loan scorecard built like a bank would build it: out-of-time validation, decline reasons, profit-based cut-off and drift monitoring"
+requires-python = ">=3.12"
+dependencies = [
+    # Pinned to the tested versions, so the saved model loads the same way everywhere.
+    "pandas==3.1.0",
+    "numpy==2.5.4",
+    "pyarrow==25.0.1",
+    "scikit-learn==1.9.1",
+    "joblib==1.6.0",
+]
+
+[project.optional-dependencies]
+download = ["kaggle==2.2.5"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+# Loan data is never committed: download it yourself (see README). Only aggregated numbers go into docs/.
+/data/
+*.csv
+*.csv.gz
+*.zip
+*.parquet
+kaggle.json
+.env
+.DS_Store
+*.egg-info/
