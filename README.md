@@ -55,6 +55,32 @@ Two things to note:
 - Defaults were high in 2007–08 (the financial crisis, and a young platform), then rose again from 2013 as Lending Club grew fast.
 - The test year 2015 is riskier than the development years (14.9 % vs 13.2 %). A model calibrated on the past will under-predict defaults there unless it is recalibrated, and the validation has to show this, not hide it.
 
+## The scorecard
+
+Nine characteristics, chosen by information value and time cross-validation (full tables: [`reports/scorecard.md`](reports/scorecard.md),
+the scorecard itself: [`models/scorecard.json`](models/scorecard.json)):
+FICO score, annual income, debt-to-income ratio, loan amount / income, number of mortgage accounts, home ownership,
+credit inquiries in the last 6 months, revolving utilisation and loan purpose.
+
+| test year (trained on all earlier years) | 2011 | 2012 | 2013 | 2014 | mean |
+|---|---:|---:|---:|---:|---:|
+| Gini, up to 6 characteristics | 0.323 | 0.278 | 0.276 | 0.275 | 0.288 |
+| **Gini, up to 9 (chosen)** | 0.342 | 0.292 | 0.273 | 0.292 | **0.300** |
+| Gini, up to 12 | 0.341 | 0.293 | 0.277 | 0.296 | 0.302 |
+
+How it was built:
+- **WoE binning** with the default-rate trend forced where it is a business rule (a higher FICO score or income never looks riskier, a higher debt ratio never looks safer). Every bin holds at least 5 % of the loans.
+- **Selection:** strongest characteristics first, skipping any whose WoE correlates above 0.6 with one already chosen. Every coefficient must be negative, the right sign with WoE inputs. The largest VIF is 1.6.
+- **Points:** 600 points = odds of 50 goods to 1 bad, and 20 points double the odds. The score is the sum of the points in the table, so anyone can add it up by hand.
+- **Decline reasons:** the characteristics where an applicant lost the most points against the best bin. Example, a 2015 applicant scoring 490: *FICO score below 665 (−37), 3 or more credit inquiries in 6 months (−17), income below 27,300 (−14).*
+
+What did not help, and decisions I made:
+- **Up to 12 characteristics gives +0.002 Gini,** which is noise, so the smaller scorecard stays.
+- **The signal is modest (IV of FICO is 0.14)** because these are approved loans only: Lending Club had already screened out the riskiest applicants (FICO below 660 and others), so the remaining differences are small. This is the reject-bias problem (milestone 3.4).
+- **Income verification is left out,** although it is known at application time. Lending Club verified mostly the applicants it already found risky, so "verified" looks riskier. That is its own judgement leaking in, and it is not a fair decline reason.
+- **A missing value never earns points:** a missing bin with fewer than 1 % of loans gets the points of the riskiest bin. Without this rule, the 29 applicants without an inquiry count got the top score for that characteristic by chance.
+- **The number of mortgage accounts was only recorded from 2012 on.** Its missing bin therefore mostly stands for "older loan", and it is never used for new applicants.
+
 ## Run it
 
 ```bash
@@ -62,6 +88,8 @@ make install       # Python 3.12 virtual environment
 make synthetic     # try everything on 20,000 fake loans, no download needed
 make download      # real data (about 650 MB), needs a Kaggle API token in ~/.kaggle/
 make data          # clean the raw CSV into data/processed/loans.parquet and print the data checks
+make population    # who is in the modelling population, default rate by year
+make scorecard     # time cross-validation, then fit the scorecard (models/, reports/)
 make test
 ```
 
@@ -75,7 +103,7 @@ The tests and CI use a synthetic fixture ([`src/crs/data/fixture.py`](src/crs/da
 
 - [x] 3.0 scaffold, data cleaning, data checks
 - [x] 3.1 target, population, time folds and the leakage gate
-- [ ] 3.2 WoE binning and points scorecard with decline reasons
+- [x] 3.2 WoE binning and points scorecard with decline reasons
 - [ ] 3.3 challenger model, calibration and out-of-time validation
 - [ ] 3.4 profit-based cut-off and reject bias
 - [ ] 3.5 drift monitoring (PSI/CSI, vintages)

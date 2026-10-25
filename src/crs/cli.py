@@ -4,7 +4,7 @@ import argparse
 
 import pandas as pd
 
-from crs import config, target
+from crs import config, develop, target
 from crs.data import download, fixture, load, quality
 
 
@@ -44,6 +44,14 @@ def cmd_population(args):
     print(f"Out-of-time test 2015: {len(oot):,} loans, bad rate {oot['bad'].mean():.3f}")
 
 
+def cmd_scorecard(args):
+    if args.synthetic:  # fake results go next to the fake data, never over the real scorecard
+        out = config.PROCESSED_DIR
+        develop.run(load.load(out / "loans_synthetic.parquet"), out / "scorecard_synthetic.json", out / "scorecard_synthetic.md")
+    else:
+        develop.run(load.load(config.LOANS_PATH))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="crs")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -54,6 +62,9 @@ def main(argv=None):
     popn = sub.add_parser("population", help="who is in the modelling population, and the default rate by year")
     popn.add_argument("--synthetic", action="store_true", help="use the fake loans from `data --synthetic`")
     popn.set_defaults(func=cmd_population)
+    card = sub.add_parser("scorecard", help="time cross-validation on 2007-2014, then fit the scorecard")
+    card.add_argument("--synthetic", action="store_true", help="use the fake loans from `data --synthetic`")
+    card.set_defaults(func=cmd_scorecard)
     args = parser.parse_args(argv)
     args.func(args)
 
