@@ -4,7 +4,7 @@ import argparse
 
 import pandas as pd
 
-from crs import config
+from crs import config, target
 from crs.data import download, fixture, load, quality
 
 
@@ -32,6 +32,18 @@ def cmd_data(args):
         print(quality.missing_share(loans).head(10).to_string())
 
 
+def cmd_population(args):
+    loans = load.load(config.PROCESSED_DIR / "loans_synthetic.parquet" if args.synthetic else config.LOANS_PATH)
+    pop = target.population(loans)
+    print("Who is in the modelling population:")
+    print(target.exclusions(loans).to_string())
+    print("\nDefault rate by issue year (36-month loans):")
+    print(target.bad_rate_by_year(pop).to_string())
+    dev, oot = target.split(pop)
+    print(f"\nDevelopment 2007-2014: {len(dev):,} loans, bad rate {dev['bad'].mean():.3f}")
+    print(f"Out-of-time test 2015: {len(oot):,} loans, bad rate {oot['bad'].mean():.3f}")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="crs")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -39,6 +51,9 @@ def main(argv=None):
     data = sub.add_parser("data", help="clean the raw CSV into data/processed/loans.parquet")
     data.add_argument("--synthetic", type=int, metavar="N", help="use N fake loans instead of the real data")
     data.set_defaults(func=cmd_data)
+    popn = sub.add_parser("population", help="who is in the modelling population, and the default rate by year")
+    popn.add_argument("--synthetic", action="store_true", help="use the fake loans from `data --synthetic`")
+    popn.set_defaults(func=cmd_population)
     args = parser.parse_args(argv)
     args.func(args)
 
