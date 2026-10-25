@@ -2,7 +2,7 @@
 
 A loan scorecard built the way a bank would build it: from raw loans to an approve/decline rule with reasons,
 validated on later loans than it was trained on. Data: 2.26 M Lending Club loans, 2007–2018.
-Status: v0.1, milestones 3.0–3.4 done (monitoring, API and a public page come next).
+Status: v0.2, milestones 3.0–3.5 done (API and a public page come next).
 
 **Results on 283,026 loans from 2015, a year never used for any choice:**
 - A 9-characteristic points scorecard ranks risk with **Gini 0.30**, and a LightGBM challenger reaches **0.34**. Lending Club's own grade, built with the full credit report, reaches 0.36. Both models beat that grade until 2012, and it pulled ahead as Lending Club improved it.
@@ -10,6 +10,7 @@ Status: v0.1, milestones 3.0–3.4 done (monitoring, API and a public page come 
 - **All models under-predict 2015 defaults** (13.5 % vs 14.9 %), because 2015 was riskier than any training year. The ranking holds, but the level drifted.
 - **Money:** at Lending Club's prices, almost every approved loan was worth funding, so a profit rule declines under 1 %. The scorecard is worth money when choosing *which* loans to fund. An investor funding half of the 2015 loans by the scorecard earns 6.29 % on money lent, against 6.09 % when picking Lending Club's best grades. The challenger earns 6.60 %.
 - **What the models never saw:** 63 % of the rejected applicants had a risk score below 660, which no approved loan had.
+- **Monitoring after go-live caught a drift that the input checks missed.** Applicants in 2015–2016 looked as safe as in development (score PSI ≤ 0.006), but early defaults ran up to **1.49×** what the model expected. The red light would have been visible from June 2017.
 
 Not for real lending decisions.
 
@@ -181,6 +182,41 @@ The scorecard's lowest FICO bin, "below 664.5", was learned from approved applic
 Scoring the full applicant pool would need reject inference (for example parcelling, or buying bureau outcomes for rejected applicants). That is listed as next work, not claimed.
 The rejected file has no outcomes and only five usable columns. Its employment-length field is not used: its share of "< 1 year" jumps from 27 % to 85 % around 2010, which looks like a form default.
 
+## Monitoring after go-live
+
+The validated scorecard goes live in January 2015, exactly as tested (a refit would need validating again) and scores every 36-month application up to the end of 2018: 1.27 M applications.
+Full report: [`reports/monitoring.md`](reports/monitoring.md). There are two kinds of checks, as in a bank:
+
+- **Inputs, from day one:** PSI on the score and CSI on each characteristic against 2007–2014 (below 0.10 green, 0.10–0.25 amber, above red).
+- **Outcomes, as they arrive:** a full 36-month outcome takes more than 3 years, so the early warning is defaults in the first 12 months, observed vs expected. That can be counted about 15 months after issue. The expected rate comes from a 12-month PD fitted on 2007–2014 only.
+
+![Monitoring](docs/img/monitoring.png)
+
+| loans issued | score PSI | early defaults, observed / expected | known from | light |
+|---|---:|---:|---|---|
+| 2015 Q1 | 0.006 | 1.03 | Jun 2016 | green |
+| 2015 Q2 | 0.002 | 1.13 | Sep 2016 | amber |
+| 2015 Q4 | 0.002 | 1.21 | Mar 2017 | amber |
+| 2016 Q1 | 0.003 | 1.33 | Jun 2017 | **red** |
+| 2016 Q3 | 0.005 | 1.49 | Dec 2017 | **red** |
+| 2017 Q4 | 0.055 | 1.37 | Mar 2019 | **red** |
+| 2018 Q3 | 0.094 | (not yet known) | | green |
+
+**What happened, in two phases:**
+1. **2015–2016: same applicants, worse outcomes.** Score PSI never passed 0.006, and the inputs even looked slightly safer (fewer credit inquiries). Yet early defaults rose to 1.49× expected, and the vintage curves show the 2016 loans going bad fastest of all years.
+   The link between score and risk changed (concept drift), for reasons the 9 characteristics cannot see: the economy, competition among online lenders, or borrowers taking several loans at once. This data cannot tell which.
+   **Lesson: input stability is not model health.** A team watching only PSI would have seen green for four years.
+2. **Late 2017–2018: different applicants.** Median revolving utilisation fell from 54 % (2014) to 41 % (2018), the share with no recent inquiries rose from 53 % to 67 %, and the share with FICO below 680 fell from 36 % (2016) to 25 %.
+   That pattern fits a tighter credit policy. The score PSI rose to 0.09, close to amber, and revolving utilisation went red (CSI 0.26).
+
+**One red light was a false alarm, and the report shows why:** the number of mortgage accounts reads CSI 0.86, but only because the field was not recorded before 2012, so 11 % of the development sample is "missing" and no new applicant is.
+Ignoring the missing bin, its CSI is 0.07 (green). The monitor reports both numbers, so an artifact cannot pass as a shift.
+
+**The action a risk team would take, from mid-2017:** recalibrate the PD level (the ranking still holds: Gini on early defaults stayed between 0.26 and 0.32) and charge more, or approve less, for the same score.
+After that, rebuild the scorecard on recent vintages once the late-2017 policy change has settled.
+
+![Vintage curves](docs/img/vintages.png)
+
 ## Run it
 
 ```bash
@@ -192,6 +228,7 @@ make population    # who is in the modelling population, default rate by year
 make scorecard     # time cross-validation, then fit the scorecard (models/, reports/)
 make validate      # out-of-time test on 2015 vs Lending Club's grade and the LightGBM challenger
 make strategy      # profit-based approve/decline rule on 2015, investor view, reject bias
+make monitor       # PSI/CSI and early defaults per quarter after go-live (2015-2018)
 make test
 ```
 
@@ -208,7 +245,7 @@ The tests and CI use a synthetic fixture ([`src/crs/data/fixture.py`](src/crs/da
 - [x] 3.2 WoE binning and points scorecard with decline reasons
 - [x] 3.3 challenger model, calibration and out-of-time validation
 - [x] 3.4 profit-based cut-off and reject bias
-- [ ] 3.5 drift monitoring (PSI/CSI, vintages)
+- [x] 3.5 drift monitoring (PSI/CSI, early defaults, vintages)
 - [ ] 3.6 API and public page
 - [ ] 3.7 model card and packaging
 

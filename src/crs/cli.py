@@ -4,7 +4,7 @@ import argparse
 
 import pandas as pd
 
-from crs import config, decision, develop, target, validation
+from crs import config, decision, develop, monitor, target, validation
 from crs.data import download, fixture, load, quality
 
 
@@ -60,6 +60,10 @@ def cmd_strategy(args):
     decision.run(load.load(config.LOANS_PATH))
 
 
+def cmd_monitor(args):
+    monitor.run(load.load(config.LOANS_PATH))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="crs")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -76,6 +80,7 @@ def main(argv=None):
     sub.add_parser("strategy", help="profit-based approve/decline rule on 2015, and reject bias").set_defaults(
         func=cmd_strategy
     )
+    sub.add_parser("monitor", help="PSI/CSI and early defaults per quarter from 2015").set_defaults(func=cmd_monitor)
     sub.add_parser("validate", help="out-of-time test on 2015 vs benchmark and challenger").set_defaults(func=cmd_validate)
     args = parser.parse_args(argv)
     args.func(args)
