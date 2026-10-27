@@ -1,9 +1,9 @@
 PY ?= .venv/bin/python
 export PYTHONPATH := src
 
-.PHONY: install download data synthetic population scorecard validate strategy monitor policy page serve test lint
+.PHONY: install download data synthetic population scorecard validate strategy monitor policy page serve notebook test lint
 install:
-	python3.12 -m venv .venv && .venv/bin/pip install -e ".[download,report,dev]"
+	python3.12 -m venv .venv && .venv/bin/pip install -e ".[download,report,notebook,dev]"
 download:
 	$(PY) -m crs.cli download
 data:
@@ -26,6 +26,8 @@ page:
 	$(PY) -m crs.cli page
 serve:
 	.venv/bin/uvicorn crs.serve:app --port 8030
+notebook:
+	.venv/bin/jupyter lab notebooks/walkthrough.ipynb
 test:
 	.venv/bin/pytest -q
 lint:

@@ -35,7 +35,6 @@ def build(loans):
 
 def check(X):
     """Fail loudly if a column that is not known at application time reaches a model."""
-    leaked = sorted(set(X.columns) & FORBIDDEN)
-    unknown = sorted(set(X.columns) - set(ALLOWED))
-    if leaked or unknown:
-        raise ValueError(f"Not allowed as model input: {leaked + unknown}")
+    not_allowed = sorted((set(X.columns) & FORBIDDEN) | (set(X.columns) - set(ALLOWED)))
+    if not_allowed:
+        raise ValueError(f"Not allowed as model input: {not_allowed}")
