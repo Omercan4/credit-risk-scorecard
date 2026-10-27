@@ -115,6 +115,7 @@ credit inquiries in the last 6 months, revolving utilisation and loan purpose.
 How it was built:
 - **WoE binning** with the default-rate trend forced where it is a business rule (a higher FICO score or income never looks riskier, a higher debt ratio never looks safer). Every bin holds at least 5 % of the loans.
 - **Selection:** strongest characteristics first, skipping any whose WoE correlates above 0.6 with one already chosen. Every coefficient must be negative, the right sign with WoE inputs. The largest VIF is 1.6.
+- **Full regression output** (coefficients, standard errors, z, p, confidence intervals, likelihood, plus a raw-variable logit with odds ratios): [`reports/regression.txt`](reports/regression.txt).
 - **Points:** 600 points = odds of 50 goods to 1 bad, and 20 points double the odds. The score is the sum of the points in the table, so anyone can add it up by hand.
 - **Decline reasons:** the characteristics where an applicant lost the most points against the best bin. Example, a 2015 applicant scoring 490: *FICO score 664 or less (−37), 3 or more credit inquiries in 6 months (−17), income below $27,300 (−14).*
 
@@ -304,6 +305,7 @@ make scorecard     # time cross-validation, then fit the scorecard (models/, rep
 make validate      # out-of-time test on 2015 vs Lending Club's grade and the LightGBM challenger
 make strategy      # profit-based approve/decline rule on 2015, investor view, reject bias
 make monitor       # PSI/CSI and early defaults per quarter after go-live (2015-2018)
+make regression    # full statistical output of the logistic regressions (reports/regression.txt)
 make policy        # evidence for the lending rules that run before the score
 make page          # export the scorecard for the web page (docs/scorecard.json)
 make serve         # API + page on http://127.0.0.1:8030 (API docs: /docs)
