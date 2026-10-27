@@ -46,6 +46,22 @@ def odds_ratios(model):
     ).round(4)
 
 
+def linearity(dev, X, y):
+    """Is FICO linear on the log-odds scale? Observed log-odds in 20-point bands vs a straight line, and AIC of both."""
+    import statsmodels.api as sm
+
+    band = (X["fico"] // 20 * 20).clip(660, 800)
+    table = pd.DataFrame({"band": band, "bad": y}).groupby("band")["bad"].agg(loans="size", default_rate="mean")
+    table["observed log-odds"] = np.log(table["default_rate"] / (1 - table["default_rate"]))
+    line = sm.Logit(y, sm.add_constant(X[["fico"]])).fit(disp=0)
+    mid = table.index + np.where(table.index == 800, 15, 10)
+    table["linear fit"] = line.params["const"] + line.params["fico"] * mid
+    table["step to next band"] = table["observed log-odds"].diff().shift(-1)
+    dummies = pd.get_dummies(band.astype(int), prefix="b", drop_first=True, dtype=float)
+    bands = sm.Logit(y, sm.add_constant(dummies)).fit(disp=0)
+    return table.round(3), {"AIC, FICO linear": round(line.aic), "AIC, FICO in 8 bands": round(bands.aic)}
+
+
 def fit(loans, card_path=config.ROOT / "models" / "scorecard.json"):
     import statsmodels.api as sm  # optional dependency: pip install -e ".[report]"
 
@@ -60,7 +76,25 @@ def fit(loans, card_path=config.ROOT / "models" / "scorecard.json"):
 
 
 def run(loans, log=print):
+    import statsmodels.api as sm
+
+    from crs import scorecard, validation
+
     m1, m2, card = fit(loans)
+    pop = target.population(loans)
+    dev, oot = target.split(pop)
+    X_dev, X_oot = features.build(dev), features.build(oot)
+    lin_table, aic = linearity(dev, X_dev, dev["bad"])
+    D_oot = raw_design(X_oot)
+    p_cont = m2.predict(sm.add_constant(D_oot))
+    s_oot = scorecard.score(card, X_oot)
+    oot_compare = pd.DataFrame(
+        {
+            "Gini 2015": [validation.gini(oot["bad"].loc[D_oot.index], p_cont), validation.gini(oot["bad"], -s_oot)],
+            "mean PD 2015": [p_cont.mean(), scorecard.pd_from_score(s_oot).mean()],
+        },
+        index=["continuous logit (model 2)", "WoE scorecard"],
+    ).round(4)
     saved = pd.Series({c["name"]: round(c["coef"], 4) for c in card["characteristics"]}, name="saved scorecard (sklearn)")
     text = "\n\n".join(
         [
@@ -76,6 +110,13 @@ def run(loans, log=print):
             "Reference: mortgage holder; purposes other than credit card and small business.\n" + "=" * 100,
             str(m2.summary()),
             "Odds ratios with 95 % confidence intervals:\n" + odds_ratios(m2).to_string(),
+            "=" * 100 + "\nIS FICO LINEAR ON THE LOG-ODDS SCALE? AND DID BINNING COST ANYTHING?\n" + "=" * 100,
+            "Observed log-odds of default in 20-point FICO bands (2007-2014) against a straight line:\n" + lin_table.to_string(),
+            "\n".join(f"{k}: {v:,}" for k, v in aic.items()),
+            "Out-of-time test 2015 (observed default rate " + f"{oot['bad'].mean():.4f}" + "):\n" + oot_compare.to_string(),
+            "The steps are nearly constant and the straight line has the lower AIC: FICO is close to linear in the log-odds.\n"
+            "It only looks stronger at the low end on the probability scale, because of the logistic S-curve.\n"
+            "The bins are used for missing values, outliers, categories, forced trends and the points table, not for FICO's shape.",
             "Notes:\n"
             "- With n = 338k every p-value is about 0: significance says little here, effect sizes and the out-of-time Gini matter.\n"
             "- A McFadden pseudo R-squared of about 0.04 is normal for default models: each outcome is a noisy coin flip.\n"

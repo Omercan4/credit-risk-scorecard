@@ -121,6 +121,7 @@ How it was built:
 
 What did not help, and decisions I made:
 - **Up to 12 characteristics gives +0.002 Gini,** which is noise, so the smaller scorecard stays.
+- **Bins vs a continuous logit.** FICO turned out to be close to linear on the log-odds scale: each 20 points lower the log-odds by about 0.27, and a straight line has a lower AIC than 8 bands (258,011 vs 258,257). A classic logit on the raw variables tests as well as the scorecard on 2015 (Gini 0.306 vs 0.303). So the bins are not there for FICO's shape. They handle missing values and outliers, turn categories into one column, force the right direction, and give a points table with reasons. The cost is a small step at each cut point. Details: [`reports/regression.txt`](reports/regression.txt).
 - **The signal is modest (IV of FICO is 0.14)** because these are approved loans only: Lending Club had already screened out the riskiest applicants (FICO below 660 and others), so the remaining differences are small. This is the reject-bias problem (milestone 3.4).
 - **Income verification is left out,** although it is known at application time. Lending Club verified mostly the applicants it already found risky, so "verified" looks riskier. That is its own judgement leaking in, and it is not a fair decline reason.
 - **A missing value never earns points:** a missing bin with fewer than 1 % of loans gets the points of the riskiest bin. Without this rule, the 29 applicants without an inquiry count got the top score for that characteristic by chance.
@@ -221,7 +222,9 @@ The rejected file has no outcomes and only five usable columns. Its employment-l
 The validated scorecard goes live in January 2015, exactly as tested (a refit would need validating again) and scores every 36-month application up to the end of 2018: 1.27 M applications.
 Full report: [`reports/monitoring.md`](reports/monitoring.md). There are two kinds of checks, as in a bank:
 
-- **Inputs, from day one:** PSI on the score and CSI on each characteristic against 2007–2014 (below 0.10 green, 0.10–0.25 amber, above red).
+- **Inputs, from day one: do the new applicants still look like 2007–2014?** PSI (population stability index) compares the share of applicants in 10 score bands now with the development years:
+  PSI = Σ (share now − share then) × ln(share now / share then), the same divergence as IV, only between then and now. Below 0.10 is green, 0.10–0.25 amber, above red.
+  Applied to one characteristic it is called CSI and shows which input moved. It needs no outcomes, but it cannot say whether the predictions are still right.
 - **Outcomes, as they arrive:** a full 36-month outcome takes more than 3 years, so the early warning is defaults in the first 12 months, observed vs expected. That can be counted about 15 months after issue. The expected rate comes from a 12-month PD fitted on 2007–2014 only.
 
 ![Monitoring](docs/img/monitoring.png)
@@ -239,7 +242,7 @@ Full report: [`reports/monitoring.md`](reports/monitoring.md). There are two kin
 **What happened, in two phases:**
 1. **2015–2016: same applicants, worse outcomes.** Score PSI never passed 0.006, and the inputs even looked slightly safer (fewer credit inquiries). Yet early defaults rose to 1.49× expected, and the vintage curves show the 2016 loans going bad fastest of all years.
    The link between score and risk changed (concept drift), for reasons the 9 characteristics cannot see: the economy, competition among online lenders, or borrowers taking several loans at once. This data cannot tell which.
-   **Lesson: input stability is not model health.** A team watching only PSI would have seen green for four years.
+   **Lesson: input stability is not model health.** The distribution of the inputs stayed the same while the link between inputs and default, P(default | inputs), changed. PSI cannot see that by construction, so a team watching only PSI would have seen green for four years.
 2. **Late 2017–2018: different applicants.** Median revolving utilisation fell from 54 % (2014) to 41 % (2018), the share with no recent inquiries rose from 53 % to 67 %, and the share with FICO below 680 fell from 36 % (2016) to 25 %.
    That pattern fits a tighter credit policy. The score PSI rose to 0.09, close to amber, and revolving utilisation went red (CSI 0.26).
 

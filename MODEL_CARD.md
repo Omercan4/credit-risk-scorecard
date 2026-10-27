@@ -27,6 +27,7 @@ and from one lender's approved loans only.
 - **How it was built:** WoE binning (optbinning) with the default-rate trend forced where it is a business rule. Every bin holds at least 5 % of the loans. Missing values get their own bin, but a missing bin with fewer than 1 % of loans gets the riskiest bin's points.
 - **Regression:** logistic regression on the WoE values. All coefficients are negative, as they must be, and the largest VIF is 1.6.
 - **Scale:** 600 points = odds of 50:1, and 20 points double the odds. Scores run from 484 to 603.
+- **Bins vs continuous:** FICO is close to linear in the log-odds (AIC: linear 258,011 vs 8 bands 258,257), and a continuous logit on the raw variables tests as well on 2015 (Gini 0.306 vs 0.303). The bins are kept for missing values, outliers, categories, forced trends and the points table. Full output: [`reports/regression.txt`](reports/regression.txt).
 - **Choices:** the number of characteristics was chosen by expanding-window time cross-validation on 2007–2014 (test years 2011–2014). Up to 12 characteristics gave +0.002 Gini, so 9 were kept.
 - **Left out on purpose:**
   - Income verification: Lending Club verified mostly applicants it already found risky, so it carries Lending Club's own judgement and is not a fair decline reason.
@@ -60,8 +61,8 @@ and from one lender's approved loans only.
 - **Where the score is worth money:** selection. An investor funding the safest 50 % earns 6.29 % on money lent with the scorecard, 6.09 % with Lending Club's grade and 6.60 % with the challenger. Both differences are significant in a bootstrap.
 
 ## Monitoring (go-live January 2015, 1.27 M applications to the end of 2018)
-- **Inputs:** score PSI ≤ 0.006 in 2015–2016, rising to 0.094 in 2018. Revolving utilisation reached CSI 0.26 (red) in 2018, consistent with a tighter credit policy.
-- **Outcomes:** early defaults (first 12 months) ran 1.13× expected for 2015 Q2 loans (known Sep 2016) and up to 1.49× for 2016 Q3 loans. Gini on early defaults stayed between 0.26 and 0.32.
+- **Inputs** (PSI: the divergence between the score distribution now and in 2007–2014): score PSI ≤ 0.006 in 2015–2016, rising to 0.094 in 2018. Revolving utilisation reached CSI 0.26 (red) in 2018, consistent with a tighter credit policy.
+- **Outcomes:** early defaults (first 12 months) ran 1.13× expected for 2015 Q2 loans (known Sep 2016) and up to 1.49× for 2016 Q3 loans. Gini on early defaults stayed between 0.26 and 0.32. The inputs did not move, but P(default | inputs) did: concept drift, which PSI cannot see by construction.
 - **Recommended action from mid-2017:** recalibrate the PD level. Then rebuild on recent vintages once the late-2017 policy change has settled.
 - **One false alarm, explained:** mortgage accounts show CSI 0.86 only because the field was not recorded before 2012. Ignoring the missing bin, the CSI is 0.07.
 
