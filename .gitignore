@@ -13,3 +13,5 @@ kaggle.json
 .env
 .DS_Store
 *.egg-info/
+# Local walkthrough notebook: kept on this machine only
+notebooks/
